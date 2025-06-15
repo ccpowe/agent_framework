@@ -1,0 +1,19 @@
+[project]
+name = "agent-framework"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "agno>=1.5.10",
+    "lancedb>=0.23.0",
+    "markdown>=3.8",
+    "mcp>=1.9.3",
+    "numpy>=2.3.0",
+    "openai>=1.84.0",
+    "pandas>=2.3.0",
+    "pylance>=0.29.0",
+    "sqlalchemy>=2.0.41",
+    "tantivy>=0.24.0",
+    "unstructured>=0.17.2",
+]
