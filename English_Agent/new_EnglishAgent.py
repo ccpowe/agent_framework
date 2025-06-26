@@ -87,7 +87,7 @@ def check_agent(state: AgentState) -> AgentState:
 
 **Decision Logic:**
 - If the answer to all three questions above is YES, you **MUST** respond with "APPROVED: [brief reason why it's correct]".
-- If the answer to any question is NO, you **MUST** respond with "REJECTED: [specific, actionable reason]". For example, "REJECTED: The word 'My' was already capitalized and should not have been changed.""""
+- If the answer to any question is NO, you **MUST** respond with "REJECTED: [specific, actionable reason]". For example, "REJECTED: The word 'My' was already capitalized and should not have been changed."""
     
     user_message = HumanMessage(content=f"""
 Evaluate this correction with balanced assessment:
