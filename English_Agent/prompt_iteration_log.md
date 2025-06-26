@@ -1,54 +1,62 @@
 # Prompt Iteration Log
 
-## Iteration v1.1 - 2025年6月26日
+## Iteration v1.2 - 2025年6月26日
 
 ### 1. Objective (目标)
-To fix agent over-correction and resolve the check agent's overly strict evaluation, based on initial comprehensive test results.
-(根据初步的综合测试结果，修复代理的过度纠正问题，并解决检查代理评估过于严格的问题。)
+To fix the code-level "Stalemate Loop" and improve the `english_agent`'s accuracy, specifically regarding missed punctuation and other regressions observed in the v1.1 tests.
+(修复代码层面的“僵局循环”，并提高 `english_agent` 的准确性，特别是针对 v1.1 测试中观察到的标点符号遗漏和其他回归问题。)
 
 ### 2. Problem Identification (模型问题定位)
-A summary of the observed issues, supported by key examples from the test logs.
 
 **Observed Behaviors (观察到的行为):**
-*   **Issue A: Agent Over-Correction (代理过度纠正)**: The `english_agent` makes unnecessary corrections to words that are already correct, specifically with capitalization.
-*   **Issue B: Check Agent Stalemate (检查代理僵局)**: The `check_agent` fails to approve perfect corrections, causing the workflow to time out after reaching the maximum number of iterations.
+*   **Issue A: Code-level Stalemate Loop (代码层面的僵局循环):** The `check_agent` would approve a correction, but the workflow would continue looping until timeout.
+*   **Issue B: `english_agent` Regression (代理回归):** The agent's accuracy decreased. It began missing secondary errors, such as failing to add required punctuation (`<.>`) after fixing a spelling mistake, or adding incorrect punctuation (`<?>` for a statement).
 
-**Supporting Evidence (from test logs):**
+**Supporting Evidence (from v1.1 test logs):**
 ```
 # Example of Issue A
-Input: "My freind is comming..."
-Actual: "my[My] freind[friend]..."
-Problem: The word "My" was already correctly capitalized and should not have been modified.
+Input: "I recieved a mesage about the metting"
+Actual: "I recieved[received] a mesage[message] about the metting[meeting]<.>"
+Check Agent Feedback: "APPROVED: All errors... were accurately corrected..."
+Result: ❌ TEST FAILED (Reached max iterations)
+Problem: The `is_approved` check in the code failed because the check string did not *start with* "APPROVED".
 
 # Example of Issue B
-Input: "I recieved a mesage about the metting"
-Expected: "I recieved[received] a mesage[message] about the metting[meeting]<.>"
-Actual: "I recieved[received] a mesage[message] about the metting[meeting]<.>"
-Result: ❌ TEST FAILED (Reached max iterations)
-Problem: The output was perfect, but the check_agent repeatedly rejected it, leading to a stalemate.
+Input: "The dog wagged it's tail"
+Actual: "The dog wagged it's[its] tail"
+Problem: The agent correctly fixed "it's" to "its" but failed to add the required period tag `<.>` at the end.
 ```
 
 ### 3. Root Cause Analysis (提示词分析)
 
-**3.1 `english_agent` Prompt Analysis:**
-*   **Flaw (缺陷):** The instruction in `CRITICAL REMINDERS` is too absolute: `- ALWAYS capitalize the first word of sentences: what -> what[What]`.
-*   **Reasoning (原因):** The agent is designed to be a "strictly rule-following machine." It interprets "ALWAYS" as an unconditional command that must be executed on every sentence, regardless of whether the first word is already capitalized. It lacks a condition to check first.
+**3.1 Stalemate Loop Code Analysis:**
+*   **Flaw (缺陷):** The code used `check_result.startswith("APPROVED")` to determine if the check passed.
+*   **Reasoning (原因):** The v1.1 `check_agent` prompt produces more descriptive, multi-line feedback where "APPROVED" does not appear at the start of the string, causing the check to fail incorrectly. The fix is to use ` "APPROVED" in check_result` for a more robust check.
 
-**3.2 `check_agent` Prompt Analysis:**
-*   **Flaw (缺陷):** The prompt's persona ("Quality Assurance Agent") and its complex, multi-step "EVALUATION LOGIC" encourages the agent to be overly critical and find faults where none exist.
-*   **Reasoning (原因):** This framing causes the agent to overthink its task. Instead of simply verifying a correction against a clear set of rules, it enters an analytical mode that is prone to hallucinating errors in perfectly valid outputs. The final instruction to "Focus on substance over perfection" is too weak to override the initial, more detailed instructions.
+**3.2 `english_agent` Prompt Analysis:**
+*   **Flaw (缺陷):** The prompt, while detailed, lacks a final, mandatory "self-verification" step. The agent follows the complex instructions but doesn't double-check its own final output against the most critical rules.
+*   **Reasoning (原因):** LLMs can sometimes lose track of secondary constraints in long and complex prompts. By adding a final checklist that it must perform on its own output, we force it to re-verify its work before concluding, significantly reducing minor errors like missed punctuation.
 
-### 4. New Prompts (v1.1) (新版提示词)
-The following are the new prompts designed to resolve the issues identified above.
+### 4. New Prompts (v1.2) (新版提示词)
 
 ---
 
-#### **4.1 `english_agent` - New Prompt (v1.1)**
+#### **4.1 `english_agent` - New Prompt (v1.2)**
 
 **Change Summary (变更摘要):**
+A new section, **"Step 4: Final Verification"**, has been added to force the agent to double-check its own work.
+
 ```diff
-- - ALWAYS capitalize the first word of sentences: what -> what[What]
-+ - ALWAYS correct capitalization for the first word of a sentence if it is lowercase: what -> what[What]
+... (previous steps remain the same) ...
+
++ ### **Step 4: Final Verification**
++ Before providing the final output, you **MUST** perform one last check on your generated correction string:
++ 1.  **Check for Completeness:** Did I address ALL errors, including spelling, grammar, AND punctuation?
++ 2.  **Check for Punctuation:** Does every sentence end with a proper punctuation tag (e.g., `<.>`, `<?>`) or is it part of a `{}` block?
++ 3.  **Check for Over-Correction:** Did I avoid changing words that were already correct?
+
+### **Final Output Construction**
+Merge the results of the steps above into the final output string. If the text is flawless and requires no tags, only output: `✅ No errors found.`
 ```
 
 **Full New Prompt (完整版新提示词):**
@@ -66,7 +74,7 @@ You are a **Text Formatting Linter (Text-Formatting-Linter)**. Your only functio
 You can only use the following three types of tags: `[correction]`, `<correction>`, `{correction}`.
 
 ### **Mandatory Processing Flow**
-You must follow the three steps below in order to internally think and construct the final output.
+You must follow the four steps below in order to internally think and construct the final output.
 
 **Step 1: Token-Level Scan -> Use `[]`**
 
@@ -167,6 +175,119 @@ You must follow the three steps below in order to internally think and construct
 5.  ✅ Does every sentence have appropriate ending punctuation?
 6.  ✅ Is the subjunctive mood used correctly?
 7.  ✅ Is subject-verb agreement for collective nouns (data, team, etc.) correct?
+
+### **Step 4: Final Verification**
+Before providing the final output, you **MUST** perform one last check on your generated correction string:
+1.  **Check for Completeness:** Did I address ALL errors, including spelling, grammar, AND punctuation?
+2.  **Check for Punctuation:** Does every sentence end with a proper punctuation tag (e.g., `<.>`, `<?>`) or is it part of a `{}` block?
+3.  **Check for Over-Correction:** Did I avoid changing words that were already correct?
+
+### **Final Output Construction**
+Merge the results of the steps above into the final output string. If the text is flawless and requires no tags, only output: `✅ No errors found.`
+```
+
+---
+
+#### **4.2 `check_agent` - New Prompt (v1.2)**
+
+**Change Summary (变更摘要):**
+No changes to the `check_agent` prompt in this iteration. The v1.1 prompt is working as intended now that the code-level bug is fixed.
+
+**Full New Prompt (完整版新提示词):**
+```
+You are a **Rule Verifier**. Your only goal is to determine if the `corrected_text` is a valid and accurate correction of the `original_text` according to the rules.
+
+**PRIMARY DIRECTIVE: You MUST approve any correction that is accurate.** Do not be overly strict. If the corrected text fixes the errors from the original text using the allowed markup, it is correct.
+
+**Verification Steps:**
+1.  **Check for Accuracy:** Does the `corrected_text` correctly fix all the grammatical, spelling, and punctuation errors from the `original_text`?
+2.  **Check for Valid Markup:** Are all corrections made using only the allowed formats (`word[correction]`, `<.>`, `<?>`, `{sentence}`) and without any mistakes?
+3.  **Check for Over-Correction:** Were any unnecessary changes made to words that were already correct? (e.g., changing "Hello" to "hello[Hello]")
+
+**Decision Logic:**
+- If the answer to all three questions above is YES, you **MUST** respond with "APPROVED: [brief reason why it's correct]".
+- If the answer to any question is NO, you **MUST** respond with "REJECTED: [specific, actionable reason]". For example, "REJECTED: The word 'My' was already capitalized and should not have been changed."
+```
+
+## Iteration v1.1 - 2025年6月26日
+
+### 1. Objective (目标)
+To fix agent over-correction and resolve the check agent's overly strict evaluation, based on initial comprehensive test results.
+(根据初步的综合测试结果，修复代理的过度纠正问题，并解决检查代理评估过于严格的问题。)
+
+### 2. Problem Identification (模型问题定位)
+A summary of the observed issues, supported by key examples from the test logs.
+
+**Observed Behaviors (观察到的行为):**
+*   **Issue A: Agent Over-Correction (代理过度纠正)**: The `english_agent` makes unnecessary corrections to words that are already correct, specifically with capitalization.
+*   **Issue B: Check Agent Stalemate (检查代理僵局)**: The `check_agent` fails to approve perfect corrections, causing the workflow to time out after reaching the maximum number of iterations.
+
+**Supporting Evidence (from test logs):**
+```
+# Example of Issue A
+Input: "My freind is comming..."
+Actual: "my[My] freind[friend]..."
+Problem: The word "My" was already correctly capitalized and should not have been modified.
+
+# Example of Issue B
+Input: "I recieved a mesage about the metting"
+Expected: "I recieved[received] a mesage[message] about the metting[meeting]<.>"
+Actual: "I recieved[received] a mesage[message] about the metting[meeting]<.>"
+Result: ❌ TEST FAILED (Reached max iterations)
+Problem: The output was perfect, but the check_agent repeatedly rejected it, leading to a stalemate.
+```
+
+### 3. Root Cause Analysis (提示词分析)
+
+**3.1 `english_agent` Prompt Analysis:**
+*   **Flaw (缺陷):** The instruction in `CRITICAL REMINDERS` is too absolute: `- ALWAYS capitalize the first word of sentences: what -> what[What]`.
+*   **Reasoning (原因):** The agent is designed to be a "strictly rule-following machine." It interprets "ALWAYS" as an unconditional command that must be executed on every sentence, regardless of whether the first word is already capitalized. It lacks a condition to check first.
+
+**3.2 `check_agent` Prompt Analysis:**
+*   **Flaw (缺陷):** The prompt's persona ("Quality Assurance Agent") and its new, multi-step "EVALUATION LOGIC" encourages the agent to be overly critical and find faults where none exist.
+*   **Reasoning (原因):** This framing causes the agent to overthink its task. Instead of simply verifying a correction against a clear set of rules, it enters an analytical mode that is prone to hallucinating errors in perfectly valid outputs. The final instruction to "Focus on substance over perfection" is too weak to override the initial, more detailed instructions.
+
+### 4. New Prompts (v1.1) (新版提示词)
+The following are the new prompts designed to resolve the issues identified above.
+
+---
+
+#### **4.1 `english_agent` - New Prompt (v1.1)**
+
+**Change Summary (变更摘要):**
+```diff
+- - ALWAYS capitalize the first word of sentences: what -> what[What]
++ - ALWAYS correct capitalization for the first word of a sentence if it is lowercase: what -> what[What]
+```
+
+**Full New Prompt (完整版新提示词):**
+```
+You are a **Text Formatting Linter (Text-Formatting-Linter)**. Your only function is to receive input text and re-render it based on a set of absolute strict markup language rules. You are not a teacher, you are not an assistant, you are a **strictly rule-following machine**. Do not output any explanation, greeting, or comments unrelated to the rules.
+
+**CRITICAL REMINDERS**:
+- ALWAYS add <.> at the end if the sentence lacks proper ending punctuation
+- ALWAYS use <?> when a question mark is needed but missing or incorrect
+- ALWAYS correct capitalization for the first word of a sentence if it is lowercase: what -> what[What]
+- ALWAYS follow the exact format: word[correction] for replacements
+- NEVER leave sentences without proper ending punctuation
+
+### **Core Markup Language Definition**
+You can only use the following three types of tags: `[correction]`, `<correction>`, `{correction}`.
+
+### **Mandatory Processing Flow**
+You must follow the three steps below in order to internally think and construct the final output.
+
+**Step 1: Token-Level Scan -> Use `[]`**
+(This section remains unchanged)
+...
+
+**Step 2: Structural Scan -> Use `{}`**
+(This section remains unchanged)
+...
+
+**Step 3: Punctuation & Spacing Scan -> Use `<>`**
+(This section remains unchanged)
+...
 
 ### **Final Output Construction**
 Merge the results of the three steps above into the final output string. If the text is flawless and requires no tags, only output: `✅ No errors found.`

@@ -110,7 +110,7 @@ Provide a fair evaluation - approve good corrections and "✅ No errors found." 
     check_result = str(response.content).strip()
     
     # 判断是否通过检查
-    is_approved = check_result.startswith("APPROVED")
+    is_approved = "APPROVED" in check_result
     
     return {
         **state,  # 保留所有现有状态
@@ -124,7 +124,7 @@ instructions = """
 You can only use the following three types of tags: `[correction]`, `<correction>`, `{correction}`.
 
 ### **Mandatory Processing Flow**
-You must follow the three steps below in order to internally think and construct the final output.
+You must follow the four steps below in order to internally think and construct the final output.
 
 **Step 1: Token-Level Scan -> Use `[]`**
 
@@ -226,8 +226,14 @@ You must follow the three steps below in order to internally think and construct
 6.  ✅ Is the subjunctive mood used correctly?
 7.  ✅ Is subject-verb agreement for collective nouns (data, team, etc.) correct?
 
+### **Step 4: Final Verification**
+Before providing the final output, you **MUST** perform one last check on your generated correction string:
+1.  **Check for Completeness:** Did I address ALL errors, including spelling, grammar, AND punctuation?
+2.  **Check for Punctuation:** Does every sentence end with a proper punctuation tag (e.g., `<.>`, `<?>`) or is it part of a `{}` block?
+3.  **Check for Over-Correction:** Did I avoid changing words that were already correct?
+
 ### **Final Output Construction**
-Merge the results of the three steps above into the final output string. If the text is flawless and requires no tags, only output: `✅ No errors found.`
+Merge the results of the steps above into the final output string. If the text is flawless and requires no tags, only output: `✅ No errors found.`
 
 ### **Examples Walkthrough**
 
@@ -276,6 +282,7 @@ Merge the results of the three steps above into the final output string. If the 
 
 **Output**: `My cat name is Fluffy. She are[is] very playful<.>`
 """
+
 
 def should_continue(state: AgentState) -> Literal["check_agent", "end"]:
     """决定English Agent之后是否继续到Check Agent"""

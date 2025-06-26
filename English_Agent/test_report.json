@@ -1,16 +1,16 @@
 {
   "spelling_errors": {
     "total": 4,
-    "passed": 2,
-    "failed": 2,
+    "passed": 4,
+    "failed": 0,
     "details": [
       {
         "input": "My freind is comming to the libary tommorow",
         "expected": "My freind[friend] is comming[coming] to the libary[library] tommorow[tomorrow]<.>",
         "actual": "My freind[friend] is comming[coming] to the libary[library] tommorow[tomorrow]<.>",
-        "approved": false,
-        "iterations": 5,
-        "status": "FAIL"
+        "approved": true,
+        "iterations": 2,
+        "status": "PASS"
       },
       {
         "input": "I recieved a mesage about the metting",
@@ -23,10 +23,10 @@
       {
         "input": "The begining of the story was intresting",
         "expected": "The begining[beginning] of the story was intresting[interesting]<.>",
-        "actual": "the[The] begining[beginning] of the story was intresting[interesting]<.>",
+        "actual": "The begining[beginning] of the story was intresting[interesting]<.>",
         "approved": true,
-        "iterations": 3,
-        "status": "FAIL"
+        "iterations": 1,
+        "status": "PASS"
       },
       {
         "input": "She is responsable for the succes of the project",
@@ -40,78 +40,78 @@
   },
   "article_errors": {
     "total": 4,
-    "passed": 0,
-    "failed": 4,
+    "passed": 3,
+    "failed": 1,
     "details": [
       {
         "input": "I saw a elephant at the zoo",
         "expected": "I saw a[an] elephant at the zoo<.>",
         "actual": "I saw a[an] elephant at the zoo<.>",
-        "approved": false,
-        "iterations": 5,
-        "status": "FAIL"
+        "approved": true,
+        "iterations": 1,
+        "status": "PASS"
       },
       {
         "input": "She is an university student",
         "expected": "She is an[a] university student<.>",
         "actual": "She is an[a] university student<.>",
-        "approved": false,
-        "iterations": 5,
-        "status": "FAIL"
+        "approved": true,
+        "iterations": 1,
+        "status": "PASS"
       },
       {
         "input": "He bought a apple and an banana",
         "expected": "He bought a[an] apple and an[a] banana<.>",
         "actual": "He bought a[an] apple and an[a] banana<.>",
-        "approved": false,
-        "iterations": 5,
-        "status": "FAIL"
+        "approved": true,
+        "iterations": 1,
+        "status": "PASS"
       },
       {
         "input": "It was an honor to meet such a honest person",
         "expected": "It was an honor to meet such a[an] honest person<.>",
-        "actual": "It was an honor to meet such a[an] honest person<.>",
-        "approved": false,
-        "iterations": 5,
+        "actual": "It was an honor to meet such a honest[an honest] person<.>",
+        "approved": true,
+        "iterations": 2,
         "status": "FAIL"
       }
     ]
   },
   "pluralization_errors": {
     "total": 4,
-    "passed": 2,
-    "failed": 2,
+    "passed": 4,
+    "failed": 0,
     "details": [
       {
         "input": "I have two cat and three dog",
         "expected": "I have two cat[cats] and three dog[dogs]<.>",
         "actual": "I have two cat[cats] and three dog[dogs]<.>",
-        "approved": false,
-        "iterations": 5,
-        "status": "FAIL"
+        "approved": true,
+        "iterations": 2,
+        "status": "PASS"
       },
       {
         "input": "The childs are playing with their toys",
         "expected": "The childs[children] are playing with their toys<.>",
         "actual": "The childs[children] are playing with their toys<.>",
         "approved": true,
-        "iterations": 3,
+        "iterations": 1,
         "status": "PASS"
       },
       {
         "input": "There are many mouses in the house",
         "expected": "There are many mouses[mice] in the house<.>",
         "actual": "There are many mouses[mice] in the house<.>",
-        "approved": false,
-        "iterations": 5,
-        "status": "FAIL"
+        "approved": true,
+        "iterations": 1,
+        "status": "PASS"
       },
       {
         "input": "The mans and womans are working together",
         "expected": "The mans[men] and womans[women] are working together<.>",
         "actual": "The mans[men] and womans[women] are working together<.>",
         "approved": true,
-        "iterations": 3,
+        "iterations": 1,
         "status": "PASS"
       }
     ]
@@ -134,7 +134,7 @@
         "expected": "i[I] live in china[China] and speak chinese[Chinese]<.>",
         "actual": "i[I] live in china[China] and speak chinese[Chinese]<.>",
         "approved": true,
-        "iterations": 2,
+        "iterations": 1,
         "status": "PASS"
       },
       {
@@ -142,39 +142,39 @@
         "expected": "john[John] and mary[Mary] went to paris[Paris] last summer<.>",
         "actual": "john[John] and mary[Mary] went to paris[Paris] last summer<.>",
         "approved": true,
-        "iterations": 4,
+        "iterations": 1,
         "status": "PASS"
       },
       {
         "input": "the meeting is on monday. we will discuss the budget",
         "expected": "the[The] meeting is on monday[Monday]<.> we[We] will discuss the budget<.>",
-        "actual": "the[The] meeting is on monday[Monday]. we[We] will discuss the budget<.>",
+        "actual": "the meeting is on monday[Monday]. we[We] will discuss the budget<.>",
         "approved": true,
-        "iterations": 2,
+        "iterations": 1,
         "status": "FAIL"
       }
     ]
   },
   "subject_verb_agreement": {
     "total": 5,
-    "passed": 1,
-    "failed": 4,
+    "passed": 4,
+    "failed": 1,
     "details": [
       {
         "input": "She don't like coffee",
         "expected": "She don't[doesn't] like coffee<.>",
         "actual": "She don't[doesn't] like coffee<.>",
-        "approved": false,
-        "iterations": 5,
-        "status": "FAIL"
+        "approved": true,
+        "iterations": 1,
+        "status": "PASS"
       },
       {
         "input": "The team are working hard",
         "expected": "The team are[is] working hard<.>",
         "actual": "The team are[is] working hard<.>",
-        "approved": false,
-        "iterations": 5,
-        "status": "FAIL"
+        "approved": true,
+        "iterations": 1,
+        "status": "PASS"
       },
       {
         "input": "Each of the students have their own book",
@@ -187,18 +187,18 @@
       {
         "input": "The data suggest different conclusions",
         "expected": "The data suggest[suggests] different conclusions<.>",
-        "actual": "✅ No errors found.",
+        "actual": "The data suggest different conclusions<.>",
         "approved": true,
-        "iterations": 3,
+        "iterations": 2,
         "status": "FAIL"
       },
       {
         "input": "Neither John nor Mary are coming",
         "expected": "Neither John nor Mary are[is] coming<.>",
-        "actual": "Neither John nor Mary are[is] coming<?>",
+        "actual": "Neither John nor Mary are[is] coming<.>",
         "approved": true,
         "iterations": 1,
-        "status": "FAIL"
+        "status": "PASS"
       }
     ]
   },
@@ -210,18 +210,18 @@
       {
         "input": "Me and him went to the store",
         "expected": "Me[I] and him[he] went to the store<.>",
-        "actual": "Me[I] and him[he] went to the store<.>",
+        "actual": "me[I] and him[he] went to the store<.>",
         "approved": true,
-        "iterations": 4,
-        "status": "PASS"
+        "iterations": 1,
+        "status": "FAIL"
       },
       {
         "input": "Between you and I, this is a secret",
         "expected": "Between you and I[me], this is a secret<.>",
-        "actual": "Between you and I[me]<,> this is a secret<.>",
+        "actual": "Between you and I[me], this is a secret<.>",
         "approved": true,
         "iterations": 1,
-        "status": "FAIL"
+        "status": "PASS"
       },
       {
         "input": "The book belongs to she and I",
@@ -235,15 +235,15 @@
   },
   "verb_form_errors": {
     "total": 4,
-    "passed": 2,
-    "failed": 2,
+    "passed": 4,
+    "failed": 0,
     "details": [
       {
         "input": "I have went to the store",
         "expected": "I have went[gone] to the store<.>",
         "actual": "I have went[gone] to the store<.>",
         "approved": true,
-        "iterations": 4,
+        "iterations": 1,
         "status": "PASS"
       },
       {
@@ -251,24 +251,24 @@
         "expected": "She has ran[run] five miles today<.>",
         "actual": "She has ran[run] five miles today<.>",
         "approved": true,
-        "iterations": 2,
+        "iterations": 1,
         "status": "PASS"
       },
       {
         "input": "They have ate all the food",
         "expected": "They have ate[eaten] all the food<.>",
         "actual": "They have ate[eaten] all the food<.>",
-        "approved": false,
-        "iterations": 5,
-        "status": "FAIL"
+        "approved": true,
+        "iterations": 2,
+        "status": "PASS"
       },
       {
         "input": "Yesterday I goed to school",
         "expected": "Yesterday I goed[went] to school<.>",
         "actual": "Yesterday I goed[went] to school<.>",
-        "approved": false,
-        "iterations": 5,
-        "status": "FAIL"
+        "approved": true,
+        "iterations": 1,
+        "status": "PASS"
       }
     ]
   },
@@ -282,31 +282,31 @@
         "expected": "The medicine will effect[affect] your health<.>",
         "actual": "The medicine will effect[affect] your health<.>",
         "approved": true,
-        "iterations": 3,
+        "iterations": 1,
         "status": "PASS"
       },
       {
         "input": "Its a beautiful day outside",
         "expected": "Its[It's] a beautiful day outside<.>",
-        "actual": "Its[It's] a beautiful day outside<.>",
+        "actual": "Its[It's] a[a] beautiful day outside<.>",
         "approved": true,
-        "iterations": 2,
-        "status": "PASS"
+        "iterations": 1,
+        "status": "FAIL"
       },
       {
         "input": "The dog wagged it's tail",
         "expected": "The dog wagged it's[its] tail<.>",
-        "actual": "The dog wagged it's[its] tail",
+        "actual": "The dog wagged it's[its] tail<.>",
         "approved": true,
-        "iterations": 3,
-        "status": "FAIL"
+        "iterations": 1,
+        "status": "PASS"
       },
       {
         "input": "Your welcome to join us",
         "expected": "Your[You're] welcome to join us<.>",
-        "actual": "your[You're] welcome to join us<.>",
-        "approved": false,
-        "iterations": 5,
+        "actual": "you're[You're] welcome to join us<.>",
+        "approved": true,
+        "iterations": 1,
         "status": "FAIL"
       }
     ]
@@ -319,7 +319,7 @@
       {
         "input": "If I was rich, I would travel the world",
         "expected": "If I was[were] rich, I would travel the world<.>",
-        "actual": "If I was[were] rich<,> I would travel the world<.>",
+        "actual": "**Internal Thought Process**:\n1. **Step 1**: `was` -> `was[were]` (Subjunctive mood in conditional sentences.)\n2. **Step 2**: No structural issues.\n3. **Step 3**: No punctuation errors.\n\n**Output**: `If I was[were] rich, I would travel the world.`",
         "approved": true,
         "iterations": 1,
         "status": "FAIL"
@@ -327,30 +327,30 @@
       {
         "input": "I wish he was here with us",
         "expected": "I wish he was[were] here with us<.>",
-        "actual": "I wish he was[were] here with us<.>",
+        "actual": "I wish he was[were] here with us<.> {I wish he were here with us.}",
         "approved": true,
         "iterations": 1,
-        "status": "PASS"
+        "status": "FAIL"
       },
       {
         "input": "If she was taller, she could reach the shelf",
         "expected": "If she was[were] taller, she could reach the shelf<.>",
-        "actual": "If she was[were] taller<,> she could reach the shelf<.>",
+        "actual": "If she was[were] taller, she could reach the shelf<.>",
         "approved": true,
-        "iterations": 3,
-        "status": "FAIL"
+        "iterations": 1,
+        "status": "PASS"
       }
     ]
   },
   "punctuation_errors": {
     "total": 5,
-    "passed": 0,
-    "failed": 5,
+    "passed": 1,
+    "failed": 4,
     "details": [
       {
         "input": "Hello how are you today",
         "expected": "Hello<,> how are you today<.>",
-        "actual": "Hello how are you today<.>",
+        "actual": "Hello[Hello<,>] how are you today<?>",
         "approved": false,
         "iterations": 5,
         "status": "FAIL"
@@ -359,24 +359,24 @@
         "input": "What is your name.",
         "expected": "What is your name<?>",
         "actual": "what[What] is your name<?>",
-        "approved": false,
-        "iterations": 5,
+        "approved": true,
+        "iterations": 1,
         "status": "FAIL"
       },
       {
         "input": "I love reading books writing stories and watching movies",
         "expected": "I love reading books<,> writing stories<,> and watching movies<.>",
         "actual": "I love reading books<,> writing stories<,> and watching movies<.>",
-        "approved": false,
-        "iterations": 5,
-        "status": "FAIL"
+        "approved": true,
+        "iterations": 1,
+        "status": "PASS"
       },
       {
         "input": "Yes I agree with you",
         "expected": "Yes<,> I agree with you<.>",
-        "actual": "yes[Yes] I agree with you<.>",
+        "actual": "Yes I agree with you<.>",
         "approved": true,
-        "iterations": 3,
+        "iterations": 2,
         "status": "FAIL"
       },
       {
@@ -384,7 +384,7 @@
         "expected": "Wow<,> that's amazing<!>",
         "actual": "✅ No errors found.",
         "approved": true,
-        "iterations": 4,
+        "iterations": 2,
         "status": "FAIL"
       }
     ]
@@ -397,7 +397,7 @@
       {
         "input": "Walking down the street, the building looked impressive",
         "expected": "{Walking down the street, I found the building looked impressive.}",
-        "actual": "{Walking down the street, I saw that the building looked impressive.}",
+        "actual": "{Walking down the street, I was impressed by the building.}",
         "approved": true,
         "iterations": 1,
         "status": "FAIL"
@@ -413,15 +413,15 @@
       {
         "input": "To improve your writing skills practice is essential",
         "expected": "{To improve your writing skills, practice is essential.}",
-        "actual": "To improve your writing skills practice is essential<.>",
-        "approved": false,
-        "iterations": 5,
+        "actual": "To improve your writing skills[,] practice is essential<.>",
+        "approved": true,
+        "iterations": 2,
         "status": "FAIL"
       },
       {
         "input": "Published last month the report contains important findings",
         "expected": "{The report, published last month, contains important findings.}",
-        "actual": "{The report, published last month, contains important findings<.>}",
+        "actual": "```  \n{Published last month, the report contains important findings.}  \n```",
         "approved": true,
         "iterations": 1,
         "status": "FAIL"
@@ -430,15 +430,15 @@
   },
   "mixed_errors": {
     "total": 5,
-    "passed": 2,
-    "failed": 3,
+    "passed": 1,
+    "failed": 4,
     "details": [
       {
         "input": "hello, my neme are cc ,what is you name？",
         "expected": "hello[Hello], my neme[name] are[is] cc, what[What] is you[your] name<?>",
-        "actual": "hello[Hello]<,> my neme[name] are[is] cc<,> what[What] is you[your] name<?> {Hello, my name is cc. What is your name?}",
+        "actual": "hello<,> my neme[name] are[is] cc<,> what[What] is you[your] name[?]<?>",
         "approved": true,
-        "iterations": 2,
+        "iterations": 1,
         "status": "FAIL"
       },
       {
@@ -446,31 +446,31 @@
         "expected": "yestaday[Yesterday] me[I] and my freind[friend] goed[went] to the libary[library]<.>",
         "actual": "yestaday[Yesterday] me[I] and my freind[friend] goed[went] to the libary[library]<.>",
         "approved": true,
-        "iterations": 1,
+        "iterations": 2,
         "status": "PASS"
       },
       {
         "input": "she dont like a apple but she love orange",
         "expected": "she[She] dont[doesn't] like a[an] apple but she love[loves] orange[oranges]<.>",
-        "actual": "she[She] dont[doesn't] like a[an] apple but she love[loves] orange[oranges]<.>",
-        "approved": false,
-        "iterations": 5,
+        "actual": "she dont[doesn't] like a[an] apple but she love[loves] orange[oranges]<.>",
+        "approved": true,
+        "iterations": 1,
         "status": "FAIL"
       },
       {
         "input": "the data suggest that there is many problem with the system",
         "expected": "the[The] data suggest[suggests] that there is[are] many problem[problems] with the system<.>",
-        "actual": "the[The] data suggest[suggests] that there is[are] many problem[problems] with the system<.>",
+        "actual": "The data suggest[suggests] that there is[are] many problem[problems] with the system<.>",
         "approved": true,
         "iterations": 1,
-        "status": "PASS"
+        "status": "FAIL"
       },
       {
         "input": "if i was you i would of went to the metting",
         "expected": "if[If] i[I] was[were] you<,> i[I] would of[have] went[gone] to the metting[meeting]<.>",
-        "actual": "if[If] i[I] was[were] you i[I] would of[have] went[gone] to the metting[meeting]<.>",
+        "actual": "if i[If] was[were] you i[I] would of[have] went[gone] to the metting[meeting]<.>",
         "approved": true,
-        "iterations": 3,
+        "iterations": 1,
         "status": "FAIL"
       }
     ]
@@ -483,15 +483,15 @@
       {
         "input": "The team's research, focused on renewable energy, have yielded promising results however more analysis is needed",
         "expected": "The team's research, focused on renewable energy, have[has] yielded promising results<;> however<,> more analysis is needed<.>",
-        "actual": "The team's research, focused on renewable energy, have[has] yielded promising results<,> however more analysis is needed<.> {The team's research, focused on renewable energy, has yielded promising results; however, more analysis is needed.}",
-        "approved": false,
-        "iterations": 5,
+        "actual": "the[The] team's research<,> focused on renewable energy<,> have[has] yielded promising results<;> however<,> more analysis is needed<.>",
+        "approved": true,
+        "iterations": 1,
         "status": "FAIL"
       },
       {
         "input": "Each of the students, along with their teacher, are responsible for completing the project by friday",
         "expected": "Each of the students, along with their teacher, are[is] responsible for completing the project by friday[Friday]<.>",
-        "actual": "each[Each] of the students, along with their teacher, are[is] responsible for completing the project by friday[Friday]<.>",
+        "actual": "each[Each] of the students<,> along with their teacher<,> are[is] responsible for completing the project by friday[Friday]<.>",
         "approved": true,
         "iterations": 1,
         "status": "FAIL"
@@ -507,9 +507,9 @@
       {
         "input": "Having been delayed by traffic the meeting started late which effected everyone's schedule",
         "expected": "Having been delayed by traffic<,> the meeting started late<,> which effected[affected] everyone's schedule<.>",
-        "actual": "Having been delayed by traffic the meeting started late which effected[affected] everyone's schedule<.> {Having been delayed by traffic, the meeting started late, which affected everyone's schedule.}",
+        "actual": "having[Having] been delayed by traffic<,> the meeting started late which effected[affected] everyone's schedule<.> {Having been delayed by traffic, the meeting started late, which affected everyone's schedule.}",
         "approved": true,
-        "iterations": 2,
+        "iterations": 1,
         "status": "FAIL"
       }
     ]
@@ -524,7 +524,7 @@
         "expected": "✅ No errors found.",
         "actual": "✅ No errors found.",
         "approved": true,
-        "iterations": 3,
+        "iterations": 1,
         "status": "PASS"
       },
       {
