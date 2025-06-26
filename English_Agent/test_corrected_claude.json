@@ -1,0 +1,124 @@
+{
+    "simple": [
+      {
+        "input": "He dont like apple",
+        "expected_output": "He dont[doesn't] like apple[apples]<.>",
+        "status": "✅ 原测试正确"
+      },
+      {
+        "input": "She is a amazin person",
+        "expected_output": "She is a[an] amazin[amazing] person<.>",
+        "status": "✅ 原测试正确"
+      },
+      {
+        "input": "My freind and me go to the park",
+        "original_expected": "My freind[friend] and me go to the park{My friend and I go to the park.}",
+        "corrected_expected": "My freind[friend] and me[I] go to the park<.>",
+        "status": "❌ 已修正",
+        "reason": "简单的代词错误应该用[]而不是{}，能用[]解决的不用{}"
+      },
+      {
+        "input": "They is happy",
+        "original_expected": "They is happy{They are happy.}",
+        "corrected_expected": "They is[are] happy<.>",
+        "status": "❌ 已修正",
+        "reason": "简单的主谓一致错误应该用[]而不是{}，还需要添加句号"
+      },
+      {
+        "input": "what is you're name.",
+        "expected_output": "what[What] is you're[your] name<?>",
+        "status": "✅ 原测试正确"
+      }
+    ],
+    "medium": [
+      {
+        "input": "I have finish my work, so I can go home now",
+        "original_expected": "I have finish[finished] my work<,> so I can go home now<.>",
+        "corrected_expected": "I have finish[finished] my work, so I can go home now<.>",
+        "status": "❌ 已修正",
+        "reason": "逗号已经存在且位置正确，不应该标记<,>"
+      },
+      {
+        "input": "The book, that I borowed from the libary, were very intresting",
+        "original_expected": "The book, that I borowed[borrowed] from the libary[library], were very intresting[interesting]<.>{The book that I borrowed from the library was very interesting.}",
+        "corrected_expected": "The book, that I borowed[borrowed] from the libary[library], were[was] very intresting[interesting]<.>",
+        "status": "❌ 已修正",
+        "reason": "主谓一致错误应该用[]而不是{}"
+      },
+      {
+        "input": "Yestaday we goed to the beach and swimmed in the sea.",
+        "expected_output": "Yestaday[Yesterday] we goed[went] to the beach and swimmed[swam] in the sea.",
+        "status": "✅ 原测试正确"
+      },
+      {
+        "input": "He is responsable for implement the new strategy",
+        "expected_output": "He is responsable[responsible] for implement[implementing] the new strategy<.>",
+        "status": "✅ 原测试正确"
+      },
+      {
+        "input": "The results of the study was significant however more research is needed.",
+        "original_expected": "The results of the study was significant however more research is needed.{The results of the study were significant; however, more research is needed.}",
+        "corrected_expected": "The results of the study was[were] significant<,> however<,> more research is needed<.>",
+        "status": "❌ 已修正",
+        "reason": "主谓一致错误应该用[]，连接副词前后需要逗号，句末需要句号"
+      }
+    ],
+    "hard": [
+      {
+        "input": "Having finished the assignment the TV was turned on.",
+        "expected_output": "Having finished the assignment the TV was turned on.{After I finished the assignment, I turned on the TV.}",
+        "status": "✅ 原测试正确",
+        "reason": "悬垂修饰语需要整句重构，使用{}正确"
+      },
+      {
+        "input": "If I was you, I would take the job offer imediately.",
+        "original_expected": "If I was you, I would take the job offer imediately[immediately].{If I were you, I would take the job offer immediately.}",
+        "corrected_expected": "If I was[were] you, I would take the job offer imediately[immediately]<.>",
+        "status": "❌ 已修正",
+        "reason": "虚拟语气错误应该用[]而不是{}，需要添加句号"
+      },
+      {
+        "input": "The affect of the new policy are not yet clear, its a complex issue with many factors to consider.",
+        "original_expected": "The affect[effect] of the new policy are not yet clear, its[it's] a complex issue with many factors to consider.{The effect of the new policy is not yet clear; it's a complex issue with many factors to consider.}",
+        "corrected_expected": "The affect[effect] of the new policy are[is] not yet clear<,> its[it's] a complex issue with many factors to consider<.>",
+        "status": "❌ 已修正",
+        "reason": "主谓一致错误应该用[]，两个独立分句间应该用逗号连接或分号，需要添加句号"
+      },
+      {
+        "input": "The data, which the team has been collecting for several months suggest a different conclusion then what was initialy expected.",
+        "original_expected": "The data, which the team has been collecting for several months<,> suggest a different conclusion then[than] what was initialy[initially] expected.{The data, which the team has been collecting for several months, suggests a different conclusion than what was initially expected.}",
+        "corrected_expected": "The data, which the team has been collecting for several months, suggest[suggests] a different conclusion then[than] what was initialy[initially] expected<.>",
+        "status": "❌ 已修正",
+        "reason": "逗号已存在不需要标记<,>，主谓一致错误用[]，需要添加句号"
+      },
+      {
+        "input": "My cat name is Fluffy. She are very playfull and love to chase mouses. Yestaday, she sleeped on my bed all day long",
+        "original_expected": "My cat name is Fluffy<.> She are[is] very playfull[playful] and love[loves] to chase mouses[mice]<.> Yestaday[Yesterday], she sleeped[slept] on my bed all day long<.>",
+        "corrected_expected": "My cat name is Fluffy.{My cat's name is Fluffy.} She are[is] very playfull[playful] and love[loves] to chase mouses[mice]<.> Yestaday[Yesterday], she sleeped[slept] on my bed all day long<.>",
+        "status": "❌ 已修正",
+        "reason": "第一句'My cat name'语法上不完整，需要所有格或重构"
+      },
+      {
+        "input": "For my new project i am building a small robot, its a challenging but fun task. I has already ordered the parts online and they will arrive next weak. I am responsable for write the code, which will controll the robot's movements. I hope it work.",
+        "expected_output": "For my new project i[I] am building a small robot<,> its[it's] a challenging but fun task<.> I has[have] already ordered the parts online and they will arrive next weak[week]<.> I am responsable[responsible] for write[writing] the code, which will controll[control] the robot's movements<.> I hope it work[works]<.>",
+        "status": "✅ 原测试正确"
+      },
+      {
+        "input": "The team's research, focused on renewable energys, have yeilded some promising results. A number of factors was considered during the analysis. Published last month the report details our findings. The affect on the industry could be significant, assuming the data is accurate.",
+        "expected_output": "The team's research, focused on renewable energys[energies], have[has] yeilded[yielded] some promising results<.> A number of factors was[were] considered during the analysis<.> Published last month the report details our findings.{The report, published last month, details our findings.} The affect[effect] on the industry could be significant, assuming the data is accurate<.>",
+        "status": "✅ 原测试正确",
+        "reason": "悬垂修饰语需要{}重构"
+      }
+    ],
+    "summary": {
+      "total_test_cases": 17,
+      "correct_cases": 8,
+      "corrected_cases": 9,
+      "accuracy_rate": "47%",
+      "main_issues": [
+        "过度使用{}标记：简单语法错误应优先使用[]",
+        "错误标记已存在的正确标点符号",
+        "忽略提示词中的优先级规则：能用[]解决的不用{}"
+      ]
+    }
+} 

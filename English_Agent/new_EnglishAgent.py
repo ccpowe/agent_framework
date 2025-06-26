@@ -76,18 +76,46 @@ def check_agent(state: AgentState) -> AgentState:
     corrected_text = state.get("corrected_text", "")
     original_text = state.get("original_text", "")
     
-    check_prompt = """You are a **Rule Verifier**. Your only goal is to determine if the `corrected_text` is a valid and accurate correction of the `original_text` according to the rules.
+    check_prompt = """You are a meticulous **Rule Verifier**. Your only goal is to determine if the `corrected_text` is a valid and accurate correction of the `original_text` according to a strict set of markup rules. Your feedback must be precise to help the correction agent improve its output.
 
-**PRIMARY DIRECTIVE: You MUST approve any correction that is accurate.** Do not be overly strict. If the corrected text fixes the errors from the original text using the allowed markup, it is correct.
+**PRIMARY DIRECTIVE: You MUST approve any correction that is accurate and follows the rules.** Do not be overly strict on style if the grammar is correct. If the corrected text fixes the errors from the original text using the allowed markup, it is correct.
 
-**Verification Steps:**
-1.  **Check for Accuracy:** Does the `corrected_text` correctly fix all the grammatical, spelling, and punctuation errors from the `original_text`?
-2.  **Check for Valid Markup:** Are all corrections made using only the allowed formats (`word[correction]`, `<.>`, `<?>`, `{sentence}`) and without any mistakes?
-3.  **Check for Over-Correction:** Were any unnecessary changes made to words that were already correct? (e.g., changing "Hello" to "hello[Hello]")
+### **Markup Language Definition**
+You must verify the use of these three tag types:
+1.  `[correction]`: For single-word replacements (spelling, grammar, capitalization).
+2.  `<correction>`: For adding or fixing single punctuation marks (e.g., `<.>`, `<,>`, `<?>`).
+3.  `{correction}`: For complete sentence restructures (e.g., fixing dangling modifiers, word order).
 
-**Decision Logic:**
-- If the answer to all three questions above is YES, you **MUST** respond with "APPROVED: [brief reason why it's correct]".
-- If the answer to any question is NO, you **MUST** respond with "REJECTED: [specific, actionable reason]". For example, "REJECTED: The word 'My' was already capitalized and should not have been changed."""
+### **Verification Checklist**
+You must verify the `corrected_text` against the `original_text` using the following steps. For any rejection, you MUST state which check failed.
+
+**Part 1: Markup Validity Check**
+1.  **Invalid Nesting:** Are there any tags inside other tags? (e.g., `word[correction<,>]`) -> **REJECTED**.
+2.  **Word Grouping:** Does any `[]` tag contain more than one word? (e.g., `a honest[an honest]`) -> **REJECTED**. The format must be `a[an] honest`.
+3.  **Invalid Punctuation:** Does the `{}` tag contain any `<>` tags inside it? -> **REJECTED**.
+4.  **Incorrect Tag Usage:** Is `[]` used for punctuation, or `<>` for words? -> **REJECTED**.
+
+**Part 2: Correction Accuracy Check**
+*For each sentence, verify the following:*
+1.  **Capitalization:** Is the first letter of the sentence correctly capitalized using `word[Word]` format if it was wrong?
+2.  **Articles (a/an):** Is every use of `a` and `an` correct based on the following word's sound?
+3.  **Plurals:** Does every noun's singular/plural form match the context?
+4.  **Subject-Verb Agreement:** Does every verb agree with its subject? (Check long-distance agreement and collective nouns like 'data').
+5.  **Verb Forms & Tense:** Are verb tenses and forms correct (e.g., `goed[went]`)?
+6.  **Ending Punctuation:** Does the sentence end with the correct punctuation, applied via a `<>` tag (e.g., `<.>`, `<?>`) if it was missing or incorrect?
+7.  **Sentence Structure:** If a `{}` tag was used, was it necessary for a major structural error (like a dangling modifier)?
+
+**Part 3: Final Verification**
+1.  **Completeness:** Were ALL errors from the `original_text` (spelling, grammar, punctuation) addressed in the `corrected_text`? If not -> **REJECTED**.
+2.  **Over-Correction:** Were any changes made to words that were already correct? (e.g., changing "My" to "My[My]") -> **REJECTED**.
+3.  **No Errors Case:** If the `original_text` was correct, does the `corrected_text` correctly state `✅ No errors found.`?
+
+### **Decision Logic**
+- If the `corrected_text` passes ALL checks, you **MUST** respond with "APPROVED: [brief reason why it's correct]".
+- If the `corrected_text` fails ANY check, you **MUST** respond with "REJECTED: [specific, actionable reason]".
+    - **Good Feedback Example:** "REJECTED: The `[]` tag was incorrectly used on a group of words in 'the cat black[the black cat]'. This requires a `{}` tag for restructuring."
+    - **Bad Feedback Example:** "REJECTED: Incorrect."
+"""
     
     user_message = HumanMessage(content=f"""
 Evaluate this correction with balanced assessment:

@@ -1,0 +1,76 @@
+{
+    "simple": [
+      {
+        "input": "He dont like apple",
+        "expected_output": "He dont[doesn't] like apple[apples]<.>"
+      },
+      {
+        "input": "She is a amazin person",
+        "expected_output": "She is a[an] amazin[amazing] person<.>"
+      },
+      {
+        "input": "My freind and me go to the park",
+        "expected_output": "My freind[friend] and me[I] go to the park<.>"
+      },
+      {
+        "input": "They is happy",
+        "expected_output": "They is[are] happy<.>"
+      },
+      {
+        "input": "what is you're name.",
+        "expected_output": "what[What] is you're[your] name<?>"
+      }
+    ],
+    "medium": [
+      {
+        "input": "I have finish my work, so I can go home now",
+        "expected_output": "I have finish[finished] my work, so I can go home now<.>"
+      },
+      {
+        "input": "The book, that I borowed from the libary, were very intresting",
+        "expected_output": "The book, that I borowed[borrowed] from the libary[library], were[was] very intresting[interesting]<.>"
+      },
+      {
+        "input": "Yestaday we goed to the beach and swimmed in the sea.",
+        "expected_output": "Yestaday[Yesterday] we goed[went] to the beach and swimmed[swam] in the sea."
+      },
+      {
+        "input": "He is responsable for implement the new strategy",
+        "expected_output": "He is responsable[responsible] for implement[implementing] the new strategy<.>"
+      },
+      {
+        "input": "The results of the study was significant however more research is needed.",
+        "expected_output": "The results of the study was[were] significant<,> however<,> more research is needed<.>"
+      }
+    ],
+    "hard": [
+      {
+        "input": "Having finished the assignment the TV was turned on.",
+        "expected_output": "Having finished the assignment the TV was turned on.{After I finished the assignment, I turned on the TV.}"
+      },
+      {
+        "input": "If I was you, I would take the job offer imediately.",
+        "expected_output": "If I was[were] you, I would take the job offer imediately[immediately]<.>"
+      },
+      {
+        "input": "The affect of the new policy are not yet clear, its a complex issue with many factors to consider.",
+        "expected_output": "The affect[effect] of the new policy are[is] not yet clear<,> its[it's] a complex issue with many factors to consider<.>"
+      },
+      {
+        "input": "The data, which the team has been collecting for several months suggest a different conclusion then what was initialy expected.",
+        "expected_output": "The data, which the team has been collecting for several months, suggest[suggests] a different conclusion then[than] what was initialy[initially] expected<.>"
+      },
+      {
+        "input": "My cat name is Fluffy. She are very playfull and love to chase mouses. Yestaday, she sleeped on my bed all day long",
+        "expected_output": "My cat name is Fluffy.{My cat's name is Fluffy.} She are[is] very playfull[playful] and love[loves] to chase mouses[mice]<.> Yestaday[Yesterday], she sleeped[slept] on my bed all day long<.>"
+      },
+      {
+        "input": "For my new project i am building a small robot, its a challenging but fun task. I has already ordered the parts online and they will arrive next weak. I am responsable for write the code, which will controll the robot's movements. I hope it work.",
+        "expected_output": "For my new project i[I] am building a small robot, its[it's] a challenging but fun task<.> I has[have] already ordered the parts online and they will arrive next weak[week]<.> I am responsable[responsible] for write[writing] the code, which will controll[control] the robot's movements<.> I hope it work[works]<.>"
+      },
+      {
+        "input": "The team's research, focused on renewable energys, have yeilded some promising results. A number of factors was considered during the analysis. Published last month the report details our findings. The affect on the industry could be significant, assuming the data is accurate.",
+        "expected_output": "The team's research, focused on renewable energys[energies], have[has] yeilded[yielded] some promising results<.> A number of factors was[were] considered during the analysis<.> Published last month the report details our findings.{The report, published last month, details our findings.} The affect[effect] on the industry could be significant, assuming the data is accurate<.>"
+      }
+    ]
+  } 
