@@ -1,0 +1,258 @@
+{
+  "spelling_errors": [
+    {
+      "input": "My freind is comming to the libary tommorow",
+      "expected_output": "My freind[friend] is comming[coming] to the libary[library] tommorow[tomorrow]<.>"
+    },
+    {
+      "input": "I recieved a mesage about the metting",
+      "expected_output": "I recieved[received] a mesage[message] about the metting[meeting]<.>"
+    },
+    {
+      "input": "The begining of the story was intresting",
+      "expected_output": "The begining[beginning] of the story was intresting[interesting]<.>"
+    },
+    {
+      "input": "She is responsable for the succes of the project",
+      "expected_output": "She is responsable[responsible] for the succes[success] of the project<.>"
+    }
+  ],
+  "article_errors": [
+    {
+      "input": "I saw a elephant at the zoo",
+      "expected_output": "I saw a[an] elephant at the zoo<.>"
+    },
+    {
+      "input": "She is an university student",
+      "expected_output": "She is an[a] university student<.>"
+    },
+    {
+      "input": "He bought a apple and an banana",
+      "expected_output": "He bought a[an] apple and an[a] banana<.>"
+    },
+    {
+      "input": "It was an honor to meet such a honest person",
+      "expected_output": "It was an honor to meet such a[an] honest person<.>"
+    }
+  ],
+  "pluralization_errors": [
+    {
+      "input": "I have two cat and three dog",
+      "expected_output": "I have two cat[cats] and three dog[dogs]<.>"
+    },
+    {
+      "input": "The childs are playing with their toys",
+      "expected_output": "The childs[children] are playing with their toys<.>"
+    },
+    {
+      "input": "There are many mouses in the house",
+      "expected_output": "There are many mouses[mice] in the house<.>"
+    },
+    {
+      "input": "The mans and womans are working together",
+      "expected_output": "The mans[men] and womans[women] are working together<.>"
+    }
+  ],
+  "capitalization_errors": [
+    {
+      "input": "what is your name",
+      "expected_output": "what[What] is your name<.>"
+    },
+    {
+      "input": "i live in china and speak chinese",
+      "expected_output": "i[I] live in china[China] and speak chinese[Chinese]<.>"
+    },
+    {
+      "input": "john and mary went to paris last summer",
+      "expected_output": "john[John] and mary[Mary] went to paris[Paris] last summer<.>"
+    },
+    {
+      "input": "the meeting is on monday. we will discuss the budget",
+      "expected_output": "the[The] meeting is on monday[Monday]<.> we[We] will discuss the budget<.>"
+    }
+  ],
+  "subject_verb_agreement": [
+    {
+      "input": "She don't like coffee",
+      "expected_output": "She don't[doesn't] like coffee<.>"
+    },
+    {
+      "input": "The team are working hard",
+      "expected_output": "The team are[is] working hard<.>"
+    },
+    {
+      "input": "Each of the students have their own book",
+      "expected_output": "Each of the students have[has] their own book<.>"
+    },
+    {
+      "input": "The data suggest different conclusions",
+      "expected_output": "The data suggest[suggests] different conclusions<.>"
+    },
+    {
+      "input": "Neither John nor Mary are coming",
+      "expected_output": "Neither John nor Mary are[is] coming<.>"
+    }
+  ],
+  "pronoun_errors": [
+    {
+      "input": "Me and him went to the store",
+      "expected_output": "Me[I] and him[he] went to the store<.>"
+    },
+    {
+      "input": "Between you and I, this is a secret",
+      "expected_output": "Between you and I[me], this is a secret<.>"
+    },
+    {
+      "input": "The book belongs to she and I",
+      "expected_output": "The book belongs to she[her] and I[me]<.>"
+    }
+  ],
+  "verb_form_errors": [
+    {
+      "input": "I have went to the store",
+      "expected_output": "I have went[gone] to the store<.>"
+    },
+    {
+      "input": "She has ran five miles today",
+      "expected_output": "She has ran[run] five miles today<.>"
+    },
+    {
+      "input": "They have ate all the food",
+      "expected_output": "They have ate[eaten] all the food<.>"
+    },
+    {
+      "input": "Yesterday I goed to school",
+      "expected_output": "Yesterday I goed[went] to school<.>"
+    }
+  ],
+  "part_of_speech_errors": [
+    {
+      "input": "The medicine will effect your health",
+      "expected_output": "The medicine will effect[affect] your health<.>"
+    },
+    {
+      "input": "Its a beautiful day outside",
+      "expected_output": "Its[It's] a beautiful day outside<.>"
+    },
+    {
+      "input": "The dog wagged it's tail",
+      "expected_output": "The dog wagged it's[its] tail<.>"
+    },
+    {
+      "input": "Your welcome to join us",
+      "expected_output": "Your[You're] welcome to join us<.>"
+    }
+  ],
+  "subjunctive_mood": [
+    {
+      "input": "If I was rich, I would travel the world",
+      "expected_output": "If I was[were] rich, I would travel the world<.>"
+    },
+    {
+      "input": "I wish he was here with us",
+      "expected_output": "I wish he was[were] here with us<.>"
+    },
+    {
+      "input": "If she was taller, she could reach the shelf",
+      "expected_output": "If she was[were] taller, she could reach the shelf<.>"
+    }
+  ],
+  "punctuation_errors": [
+    {
+      "input": "Hello how are you today",
+      "expected_output": "Hello<,> how are you today<.>"
+    },
+    {
+      "input": "What is your name.",
+      "expected_output": "What is your name<?>"
+    },
+    {
+      "input": "I love reading books writing stories and watching movies",
+      "expected_output": "I love reading books<,> writing stories<,> and watching movies<.>"
+    },
+    {
+      "input": "Yes I agree with you",
+      "expected_output": "Yes<,> I agree with you<.>"
+    },
+    {
+      "input": "Wow that's amazing.",
+      "expected_output": "Wow<,> that's amazing<!>"
+    }
+  ],
+  "structural_problems": [
+    {
+      "input": "Walking down the street, the building looked impressive",
+      "expected_output": "{Walking down the street, I found the building looked impressive.}"
+    },
+    {
+      "input": "Having finished the homework the TV was turned on",
+      "expected_output": "{Having finished the homework, I turned on the TV.}"
+    },
+    {
+      "input": "To improve your writing skills practice is essential",
+      "expected_output": "{To improve your writing skills, practice is essential.}"
+    },
+    {
+      "input": "Published last month the report contains important findings",
+      "expected_output": "{The report, published last month, contains important findings.}"
+    }
+  ],
+  "mixed_errors": [
+    {
+      "input": "hello, my neme are cc ,what is you name？",
+      "expected_output": "hello[Hello], my neme[name] are[is] cc, what[What] is you[your] name<?>"
+    },
+    {
+      "input": "yestaday me and my freind goed to the libary",
+      "expected_output": "yestaday[Yesterday] me[I] and my freind[friend] goed[went] to the libary[library]<.>"
+    },
+    {
+      "input": "she dont like a apple but she love orange",
+      "expected_output": "she[She] dont[doesn't] like a[an] apple but she love[loves] orange[oranges]<.>"
+    },
+    {
+      "input": "the data suggest that there is many problem with the system",
+      "expected_output": "the[The] data suggest[suggests] that there is[are] many problem[problems] with the system<.>"
+    },
+    {
+      "input": "if i was you i would of went to the metting",
+      "expected_output": "if[If] i[I] was[were] you<,> i[I] would of[have] went[gone] to the metting[meeting]<.>"
+    }
+  ],
+  "complex_cases": [
+    {
+      "input": "The team's research, focused on renewable energy, have yielded promising results however more analysis is needed",
+      "expected_output": "The team's research, focused on renewable energy, have[has] yielded promising results<;> however<,> more analysis is needed<.>"
+    },
+    {
+      "input": "Each of the students, along with their teacher, are responsible for completing the project by friday",
+      "expected_output": "Each of the students, along with their teacher, are[is] responsible for completing the project by friday[Friday]<.>"
+    },
+    {
+      "input": "Neither the manager nor the employees was aware of the new policy its implementation will begin next weak",
+      "expected_output": "Neither the manager nor the employees was[were] aware of the new policy<.> its[Its] implementation will begin next weak[week]<.>"
+    },
+    {
+      "input": "Having been delayed by traffic the meeting started late which effected everyone's schedule",
+      "expected_output": "Having been delayed by traffic<,> the meeting started late<,> which effected[affected] everyone's schedule<.>"
+    }
+  ],
+  "no_errors": [
+    {
+      "input": "The quick brown fox jumps over the lazy dog.",
+      "expected_output": "✅ No errors found."
+    },
+    {
+      "input": "She is an excellent student who works hard every day.",
+      "expected_output": "✅ No errors found."
+    },
+    {
+      "input": "What time does the meeting start tomorrow?",
+      "expected_output": "✅ No errors found."
+    },
+    {
+      "input": "I have finished my homework, so I can watch TV now.",
+      "expected_output": "✅ No errors found."
+    }
+  ]
+}

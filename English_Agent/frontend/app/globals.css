@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 引入一个手写体字体用于魔法书效果，如果需要的话 */
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap');
+
+body {
+  @apply bg-gray-100 text-book-text;
+}
+
+/* 可以在这里添加更多全局样式或组件层 */
+.magic-book-page {
+  /* 示例：页面卷曲效果的阴影等 */
+  box-shadow: 0 0 20px rgba(0,0,0,0.1), 5px 5px 5px rgba(0,0,0,0.05);
+}

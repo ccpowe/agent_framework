@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, Header, Body
 from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
 import os
@@ -13,6 +14,27 @@ from agno.storage.postgres import PostgresStorage
 # Load environment variables from .env file
 load_dotenv()
 
+app = FastAPI(
+    title="English Agent API",
+    description="API for the English Grammar and Writing Optimization Agent.",
+    version="1.0.0"
+)
+
+# --- BEGIN CORS CONFIGURATION ---
+origins = [
+    "http://localhost:3000",  # 您的 Next.js 前端开发服务器地址
+    "http://127.0.0.1:3000", # 也包含 127.0.0.1
+    # 如果您有其他需要访问此 API 的源，也请在此处添加
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+# --- END CORS CONFIGURATION ---
 # Initialize storage and memory (same as in multi_agent.py)
 try:
     storage = PostgresStorage(
@@ -112,12 +134,6 @@ try:
 except Exception as e:
     print(f"Error during agent initialization: {e}")
     english_agent = None # Ensure agent is None if initialization fails
-
-app = FastAPI(
-    title="English Grammar Agent API",
-    description="API for interacting with the English Grammar and Writing Optimization Assistant.",
-    version="1.0.0"
-)
 
 class QueryRequest(BaseModel):
     message: str
