@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-使用comprehensive_test.json测试LangGraph英语纠错系统
+使用comprehensive_test.json测试LangGraph英语纠错系统 (Multi-Agent版本)
 """
 
 import json
@@ -50,13 +50,15 @@ def test_category(category_name: str, test_cases: List[Dict], process_text_func)
         print(f"期望: \"{expected_output}\"")
         
         try:
+            # 适配新的process_text函数返回格式
             result = process_text_func(input_text, verbose=False)
             actual_output = result['corrected_text']
             approved = result['approved']
-            iterations = result['iterations']
+            check_result = result['check_result']
             
             print(f"实际: \"{actual_output}\"")
-            print(f"通过: {'是' if approved else '否'} (迭代: {iterations})")
+            print(f"通过: {'是' if approved else '否'}")
+            print(f"检查: {check_result}")
             
             # 检查输出是否匹配期望
             if actual_output == expected_output and approved:
@@ -68,14 +70,14 @@ def test_category(category_name: str, test_cases: List[Dict], process_text_func)
                 results["failed"] += 1
                 status = "FAIL"
                 if not approved:
-                    print(f"反馈: {result['check_result']}")
+                    print(f"反馈: {check_result}")
             
             results["details"].append({
                 "input": input_text,
                 "expected": expected_output,
                 "actual": actual_output,
                 "approved": approved,
-                "iterations": iterations,
+                "check_result": check_result,
                 "status": status
             })
             
@@ -87,7 +89,7 @@ def test_category(category_name: str, test_cases: List[Dict], process_text_func)
                 "expected": expected_output,
                 "actual": f"ERROR: {e}",
                 "approved": False,
-                "iterations": 0,
+                "check_result": f"ERROR: {e}",
                 "status": "ERROR"
             })
     
@@ -96,7 +98,7 @@ def test_category(category_name: str, test_cases: List[Dict], process_text_func)
 def generate_report(all_results: Dict) -> None:
     """生成测试报告"""
     print("\n" + "=" * 80)
-    print("📊 测试报告总结")
+    print("📊 测试报告总结 (Multi-Agent Assembly Line)")
     print("=" * 80)
     
     total_cases = 0
@@ -119,7 +121,7 @@ def generate_report(all_results: Dict) -> None:
     print(f"   总计: {total_cases} | 通过: {total_passed} | 失败: {total_failed} | 通过率: {overall_pass_rate:.1f}%")
     
     if overall_pass_rate >= 90:
-        print("🎉 优秀！系统表现很好")
+        print("🎉 优秀！多代理系统表现很好")
     elif overall_pass_rate >= 70:
         print("👍 良好！还有改进空间")
     else:
@@ -127,7 +129,7 @@ def generate_report(all_results: Dict) -> None:
 
 def save_detailed_report(all_results: Dict) -> None:
     """保存详细报告到文件"""
-    report_file = current_dir / "test_report.json"
+    report_file = current_dir / "test_report_multiagent.json"
     
     try:
         with open(report_file, 'w', encoding='utf-8') as f:
@@ -138,7 +140,7 @@ def save_detailed_report(all_results: Dict) -> None:
 
 def main():
     """主测试函数"""
-    print("🧪 LangGraph英语纠错系统 - 综合测试")
+    print("🧪 LangGraph英语纠错系统 - 综合测试 (Multi-Agent版)")
     print("=" * 80)
     
     # 检查环境
