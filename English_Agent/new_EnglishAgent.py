@@ -54,7 +54,7 @@ Please correct the original text again, taking the feedback into account. Pay sp
 **CRITICAL REMINDERS**:
 - ALWAYS add <.> at the end if the sentence lacks proper ending punctuation
 - ALWAYS use <?> when a question mark is needed but missing or incorrect
-- ALWAYS capitalize the first word of sentences: what -> what[What]
+- ALWAYS correct capitalization for the first word of a sentence if it is lowercase: what -> what[What]
 - ALWAYS follow the exact format: word[correction] for replacements
 - NEVER leave sentences without proper ending punctuation"""
     
@@ -76,48 +76,18 @@ def check_agent(state: AgentState) -> AgentState:
     corrected_text = state.get("corrected_text", "")
     original_text = state.get("original_text", "")
     
-    check_prompt = """
-You are a Quality Assurance Agent for the Text Formatting Linter system. Your job is to verify if the corrected text appropriately follows the markup language rules.
+    check_prompt = """You are a **Rule Verifier**. Your only goal is to determine if the `corrected_text` is a valid and accurate correction of the `original_text` according to the rules.
 
-**EVALUATION LOGIC**:
+**PRIMARY DIRECTIVE: You MUST approve any correction that is accurate.** Do not be overly strict. If the corrected text fixes the errors from the original text using the allowed markup, it is correct.
 
-1. **First, determine if corrections were needed**:
-   - If original text was already correct: "✅ No errors found." is VALID and should be APPROVED
-   - If original text had errors: Check if they were properly corrected with markup
+**Verification Steps:**
+1.  **Check for Accuracy:** Does the `corrected_text` correctly fix all the grammatical, spelling, and punctuation errors from the `original_text`?
+2.  **Check for Valid Markup:** Are all corrections made using only the allowed formats (`word[correction]`, `<.>`, `<?>`, `{sentence}`) and without any mistakes?
+3.  **Check for Over-Correction:** Were any unnecessary changes made to words that were already correct? (e.g., changing "Hello" to "hello[Hello]")
 
-2. **Markup Format Validation** (only when corrections are present):
-   
-   **`[correction]` Format**:
-   - Must be: `original_word[corrected_word]`
-   - Examples: `what[What]`, `name[names]`, `are[is]`
-   - Only one word inside brackets, no extra spaces
-   
-   **`<correction>` Punctuation**:
-   - Use `<.>` for missing periods
-   - Use `<?>` for question marks  
-   - Use `<,>` for missing commas
-   - Only tag punctuation that needs correction/addition
-   
-   **`{correction}` Structure**:
-   - Complete sentence reconstruction for structural issues
-   - Should contain proper punctuation within
-
-3. **Smart Evaluation Criteria**:
-   - **Necessary corrections made**: Were the actual errors corrected?
-   - **Format accuracy**: Are the markup tags used correctly?
-   - **No over-correction**: Were unnecessary changes avoided?
-   - **Context appropriateness**: Are corrections suitable for the context?
-
-**BALANCED EVALUATION**:
-- APPROVE if: Errors are appropriately corrected with proper markup OR text was already correct
-- REJECT only if: Clear errors remain uncorrected OR markup format is significantly wrong
-
-**Response Format**:
-- "APPROVED: [brief reason why it's correct]"
-- "REJECTED: [specific issues that need fixing]"
-
-Focus on substance over perfection - the goal is accurate grammar correction, not format obsession.
-"""
+**Decision Logic:**
+- If the answer to all three questions above is YES, you **MUST** respond with "APPROVED: [brief reason why it's correct]".
+- If the answer to any question is NO, you **MUST** respond with "REJECTED: [specific, actionable reason]". For example, "REJECTED: The word 'My' was already capitalized and should not have been changed.""""
     
     user_message = HumanMessage(content=f"""
 Evaluate this correction with balanced assessment:
