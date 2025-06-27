@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-使用comprehensive_test.json测试LangGraph英语纠错系统 (Multi-Agent版本)
+使用test_corrected.json测试LangGraph英语纠错系统 (Multi-Agent版本) - 修正版测试数据
 """
 
 import json
@@ -17,7 +17,7 @@ sys.path.insert(0, str(current_dir))
 
 def load_test_cases() -> Dict:
     """加载测试案例"""
-    test_file = current_dir / "comprehensive_test.json"
+    test_file = current_dir / "test_corrected.json"
     
     try:
         with open(test_file, 'r', encoding='utf-8') as f:
@@ -98,7 +98,7 @@ def test_category(category_name: str, test_cases: List[Dict], process_text_func)
 def generate_report(all_results: Dict) -> None:
     """生成测试报告"""
     print("\n" + "=" * 80)
-    print("📊 测试报告总结 (Multi-Agent Assembly Line)")
+    print("📊 测试报告总结 (修正版测试数据)")
     print("=" * 80)
     
     total_cases = 0
@@ -121,7 +121,7 @@ def generate_report(all_results: Dict) -> None:
     print(f"   总计: {total_cases} | 通过: {total_passed} | 失败: {total_failed} | 通过率: {overall_pass_rate:.1f}%")
     
     if overall_pass_rate >= 90:
-        print("🎉 优秀！多代理系统表现很好")
+        print("🎉 优秀！语法纠错系统表现很好")
     elif overall_pass_rate >= 70:
         print("👍 良好！还有改进空间")
     else:
@@ -129,7 +129,7 @@ def generate_report(all_results: Dict) -> None:
 
 def save_detailed_report(all_results: Dict) -> None:
     """保存详细报告到文件"""
-    report_file = current_dir / "test_report_multiagent.json"
+    report_file = current_dir / "test_report_corrected.json"
     
     try:
         with open(report_file, 'w', encoding='utf-8') as f:
@@ -140,7 +140,7 @@ def save_detailed_report(all_results: Dict) -> None:
 
 def main():
     """主测试函数"""
-    print("🧪 LangGraph英语纠错系统 - 综合测试 (Multi-Agent版)")
+    print("🧪 LangGraph英语纠错系统 - 综合测试 (修正版测试数据)")
     print("=" * 80)
     
     # 检查环境

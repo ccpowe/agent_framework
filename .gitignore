@@ -5,6 +5,14 @@ build/
 dist/
 wheels/
 *.egg-info
-./English_Agent/.env
+# Environment variables
+English_Agent/.env
+game_agent/.env
+learn_agent/.env
 # Virtual environments
 .venv
+
+# Next.js
+.next
+node_modules
+.env
