@@ -14,10 +14,14 @@ from datetime import datetime
 
 from agent_system import create_doudizhu_agent_system, DoudizhuAgentSystem
 from game_logic import Game
+from logging_config import logging_config
 
-# 配置日志
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# 初始化日志系统
+logger = logging_config.setup_logging()
+game_logger = logging_config.get_game_logger()
+log_dir = logging_config.log_dir
+
+logger.info("日志系统初始化完成")
 
 # 创建FastAPI应用
 app = FastAPI(
@@ -34,6 +38,34 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# 添加请求日志中间件
+@app.middleware("http")
+async def log_requests(request, call_next):
+    """记录所有HTTP请求和响应"""
+    start_time = datetime.now()
+    
+    # 记录请求信息
+    client_ip = request.client.host if request.client else "unknown"
+    logger.info(f"请求开始: {request.method} {request.url} - 客户端IP: {client_ip}")
+    
+    # 处理请求
+    try:
+        response = await call_next(request)
+        
+        # 计算处理时间
+        process_time = (datetime.now() - start_time).total_seconds()
+        
+        # 记录响应信息
+        logger.info(f"请求完成: {request.method} {request.url} - 状态码: {response.status_code} - 处理时间: {process_time:.3f}s")
+        
+        return response
+        
+    except Exception as e:
+        # 记录异常
+        process_time = (datetime.now() - start_time).total_seconds()
+        logger.error(f"请求异常: {request.method} {request.url} - 错误: {str(e)} - 处理时间: {process_time:.3f}s")
+        raise
 
 # 全局游戏管理
 game_sessions: Dict[str, Dict[str, Any]] = {}
@@ -247,6 +279,9 @@ async def run_game_async(game_id: str, agent_system: DoudizhuAgentSystem):
     session = game_sessions[game_id]
     session["status"] = "running"
     session["last_updated"] = datetime.now().isoformat()
+    
+    # 使用游戏专用日志记录器
+    game_logger.info(f"开始以流式方式运行游戏: {game_id}")
     logger.info(f"开始以流式方式运行游戏: {game_id}")
 
     final_state = None
@@ -257,10 +292,12 @@ async def run_game_async(game_id: str, agent_system: DoudizhuAgentSystem):
         # 使用 async for 循环处理 stream_game() 返回的每一个完整的 GraphState
         async for current_state_chunk in agent_system.stream_game():
             step_count += 1
+            game_logger.info(f"[{game_id}] 步骤 {step_count}: {list(current_state_chunk.keys())}")
             logger.info(f"[{game_id}] 步骤 {step_count}: {list(current_state_chunk.keys())}")
             
             # 防止无限循环
             if step_count > max_steps:
+                game_logger.warning(f"[{game_id}] 达到最大步数限制，强制结束")
                 logger.warning(f"[{game_id}] 达到最大步数限制，强制结束")
                 session["status"] = "error"
                 session["error"] = "游戏步数超限"
@@ -389,18 +426,28 @@ async def websocket_endpoint(websocket, game_id: str):
 @app.on_event("startup")
 async def startup_event():
     """应用启动事件"""
+    logger.info("=" * 50)
     logger.info("斗地主多智能体系统启动")
+    logger.info(f"日志目录: {log_dir.absolute()}")
     logger.info("API文档: http://localhost:8000/docs")
+    logger.info("日志管理: http://localhost:8000/api/logs")
+    logger.info("=" * 50)
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """应用关闭事件"""
+    logger.info("=" * 50)
     logger.info("斗地主多智能体系统关闭")
+    logger.info(f"清理游戏会话: {len(game_sessions)} 个")
+    logger.info(f"清理智能体系统: {len(agent_systems)} 个")
     
     # 清理所有会话
     game_sessions.clear()
     agent_systems.clear()
+    
+    logger.info("系统关闭完成")
+    logger.info("=" * 50)
 
 
 # ========== 开发和调试工具 ==========
@@ -421,6 +468,122 @@ async def debug_game(game_id: str):
         "full_session": session,
         "has_agent_system": game_id in agent_systems
     }
+
+
+@app.get("/api/logs")
+async def get_log_files():
+    """
+    获取日志文件列表和统计信息
+    """
+    try:
+        stats = logging_config.get_log_stats()
+        return stats
+    except Exception as e:
+        logger.error(f"获取日志文件列表失败: {e}")
+        raise HTTPException(status_code=500, detail=f"获取日志文件失败: {str(e)}")
+
+
+@app.get("/api/logs/{filename}")
+async def get_log_content(filename: str, lines: int = 100):
+    """
+    获取指定日志文件的内容
+    
+    Args:
+        filename: 日志文件名
+        lines: 返回最后N行，默认100行
+    """
+    try:
+        log_file = log_dir / filename
+        
+        # 安全检查：确保文件在日志目录内
+        if not log_file.exists() or not str(log_file.resolve()).startswith(str(log_dir.resolve())):
+            raise HTTPException(status_code=404, detail="日志文件不存在")
+        
+        # 读取文件最后N行
+        with open(log_file, 'r', encoding='utf-8') as f:
+            all_lines = f.readlines()
+            recent_lines = all_lines[-lines:] if len(all_lines) > lines else all_lines
+        
+        return {
+            "filename": filename,
+            "total_lines": len(all_lines),
+            "returned_lines": len(recent_lines),
+            "content": "".join(recent_lines)
+        }
+        
+    except UnicodeDecodeError:
+        # 如果UTF-8解码失败，尝试其他编码
+        try:
+            with open(log_file, 'r', encoding='gbk') as f:
+                all_lines = f.readlines()
+                recent_lines = all_lines[-lines:] if len(all_lines) > lines else all_lines
+            
+            return {
+                "filename": filename,
+                "total_lines": len(all_lines),
+                "returned_lines": len(recent_lines),
+                "content": "".join(recent_lines),
+                "encoding": "gbk"
+            }
+        except Exception as e:
+            logger.error(f"读取日志文件编码错误: {e}")
+            raise HTTPException(status_code=500, detail="日志文件编码错误")
+            
+    except Exception as e:
+        logger.error(f"读取日志文件失败: {e}")
+        raise HTTPException(status_code=500, detail=f"读取日志文件失败: {str(e)}")
+
+
+@app.delete("/api/logs/{filename}")
+async def delete_log_file(filename: str):
+    """
+    删除指定的日志文件
+    注意：主日志文件不能删除
+    """
+    try:
+        log_file = log_dir / filename
+        
+        # 安全检查
+        if not log_file.exists() or not str(log_file.resolve()).startswith(str(log_dir.resolve())):
+            raise HTTPException(status_code=404, detail="日志文件不存在")
+        
+        # 防止删除主日志文件
+        if filename in ["doudizhu_api.log", "doudizhu_error.log", "doudizhu_game.log"]:
+            raise HTTPException(status_code=403, detail="不能删除主日志文件")
+        
+        log_file.unlink()
+        logger.info(f"删除日志文件: {filename}")
+        
+        return {"message": f"日志文件 {filename} 删除成功"}
+        
+    except Exception as e:
+        logger.error(f"删除日志文件失败: {e}")
+        raise HTTPException(status_code=500, detail=f"删除日志文件失败: {str(e)}")
+
+
+@app.post("/api/logs/cleanup")
+async def cleanup_old_logs(days: int = 30):
+    """
+    清理超过指定天数的旧日志文件
+    
+    Args:
+        days: 保留天数，默认30天
+    """
+    try:
+        if days < 1:
+            raise HTTPException(status_code=400, detail="保留天数必须大于0")
+        
+        cleaned_files = logging_config.cleanup_old_logs(days) or []
+        
+        return {
+            "message": f"清理完成，删除了 {len(cleaned_files)} 个过期日志文件",
+            "cleaned_files": cleaned_files,
+            "retention_days": days
+        }
+        
+    except Exception as e:
+        logger.error(f"清理日志文件失败: {e}")
+        raise HTTPException(status_code=500, detail=f"清理日志文件失败: {str(e)}")
 
 
 if __name__ == "__main__":

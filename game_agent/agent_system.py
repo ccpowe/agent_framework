@@ -190,7 +190,7 @@ class DoudizhuAgentSystem:
             "messages": [SystemMessage(content="斗地主游戏开始，进入叫地主阶段")]
         }
     
-    def _bidding_phase_node(self, state: GraphState) -> Dict[str, Any]:
+    async def _bidding_phase_node(self, state: GraphState) -> Dict[str, Any]:
         """叫地主阶段节点"""
         logger.info("开始叫地主阶段")
         
@@ -198,13 +198,48 @@ class DoudizhuAgentSystem:
         bidding_results = {}
         messages = []
         
-        # 简化叫地主逻辑：让player_1默认成为地主
-        # 实际项目中这里应该是一个更复杂的智能体决策过程
-        bidding_results["player_1"] = True
-        bidding_results["player_2"] = False 
-        bidding_results["player_3"] = False
+        players = ["player_1", "player_2", "player_3"]
+        current_bid = 0
+        landlord_candidate = None
         
-        messages.append(SystemMessage(content="叫地主阶段完成，player_1成为地主"))
+        # 循环叫地主，直到所有玩家都叫过或有人叫了3分
+        for _ in range(len(players) * 2):  # 最多两轮叫地主
+            for player_id in players:
+                if landlord_candidate and current_bid == 3:
+                    break # 已经有人叫了3分，叫地主结束
+                
+                # 构建叫地主prompt
+                prompt = format_bidding_prompt(
+                    player_cards=game.get_hand_summary(player_id),
+                    current_bid=current_bid,
+                    player_id=player_id
+                )
+                
+                # 调用AI获取决策
+                ai_response = await self.agent_manager.get_player_decision(player_id, prompt)
+                decision = parse_ai_response(ai_response)
+                
+                action = decision.get("action")
+                bid_score = decision.get("score", 0)
+                
+                logger.info(f"{player_id} 叫地主决策: {action}, 分数: {bid_score}")
+                
+                if action == "bid" and bid_score > current_bid:
+                    current_bid = bid_score
+                    landlord_candidate = player_id
+                    messages.append(SystemMessage(content=f"{player_id} 叫了 {bid_score} 分"))
+                    bidding_results[player_id] = True
+                else:
+                    messages.append(SystemMessage(content=f"{player_id} 不叫"))
+                    bidding_results[player_id] = False
+            
+            if landlord_candidate and current_bid == 3:
+                break # 已经有人叫了3分，叫地主结束
+        
+        if landlord_candidate:
+            messages.append(SystemMessage(content=f"叫地主阶段完成，{landlord_candidate} 成为地主"))
+        else:
+            messages.append(SystemMessage(content="叫地主阶段完成，没有玩家叫地主"))
         
         return {
             "bidding_results": bidding_results,

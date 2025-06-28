@@ -2,7 +2,8 @@ import type { Player } from "@/app/page"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { HandDisplay } from "@/components/hand-display"
-import { Crown, Users } from "lucide-react"
+import { Crown, Users, Eye, EyeOff } from "lucide-react"
+import { useState } from "react"
 
 interface PlayerAreaProps {
   player: Player
@@ -11,6 +12,8 @@ interface PlayerAreaProps {
 }
 
 export function PlayerArea({ player, position, showCards }: PlayerAreaProps) {
+  const [isCardsVisible, setIsCardsVisible] = useState(true)
+
   const getRoleIcon = () => {
     if (player.role === "landlord") {
       return <Crown className="h-4 w-4 text-yellow-400" />
@@ -33,14 +36,51 @@ export function PlayerArea({ player, position, showCards }: PlayerAreaProps) {
     return "text-white"
   }
 
+  // 根据位置调整卡片高度
+  const getCardHeight = () => {
+    switch (position) {
+      case "bottom":
+        return "min-h-[160px]" // 进一步减少底部玩家区域高度
+      case "top-left":
+      case "top-right":
+        return "min-h-[120px]" // 进一步减少顶部玩家区域高度
+      default:
+        return "min-h-[120px]"
+    }
+  }
+
   return (
-    <Card className={`bg-gray-800 border-gray-700 p-4 ${player.is_turn ? "ring-2 ring-blue-400" : ""}`}>
-      <div className="flex items-center justify-between mb-3">
+    <Card className={`bg-gray-800 border-gray-700 compact-player-card ${getCardHeight()} ${player.is_turn ? "ring-2 ring-blue-400 shadow-lg shadow-blue-400/20" : ""}`}>
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center space-x-2">
-          <span className={`font-semibold ${getPlayerNameColor()}`}>{player.name}</span>
+          <span className={`font-semibold ${getPlayerNameColor()}`}>
+            {player.name}
+            {/* 思考中状态紧跟在名称后面 */}
+            {player.is_turn && (
+              <span className="ml-2 text-blue-400 text-sm">
+                <span className="inline-block w-1 h-1 bg-blue-400 rounded-full mr-1 animate-pulse"></span>
+                思考中
+              </span>
+            )}
+          </span>
           {getRoleIcon()}
         </div>
         <div className="flex items-center space-x-2">
+          {/* 扑克牌可见性切换按钮 */}
+          {showCards && (
+            <button
+              onClick={() => setIsCardsVisible(!isCardsVisible)}
+              className="p-1 hover:bg-gray-700 rounded transition-colors"
+              title={isCardsVisible ? "隐藏扑克牌" : "显示扑克牌"}
+            >
+              {isCardsVisible ? (
+                <Eye className="h-4 w-4 text-gray-400" />
+              ) : (
+                <EyeOff className="h-4 w-4 text-gray-400" />
+              )}
+            </button>
+          )}
+          
           {player.role !== "pending" && (
             <Badge className={getRoleColor()}>{player.role === "landlord" ? "地主" : "农民"}</Badge>
           )}
@@ -50,16 +90,26 @@ export function PlayerArea({ player, position, showCards }: PlayerAreaProps) {
         </div>
       </div>
 
-      {player.is_turn && (
-        <div className="mb-3">
-          <div className="flex items-center text-blue-400 text-sm">
-            <div className="w-2 h-2 bg-blue-400 rounded-full mr-2 animate-pulse"></div>
-            思考中...
-          </div>
-        </div>
-      )}
+      {/* 扑克牌显示区域 */}
+      <div className="flex-1 mb-1">
+        <HandDisplay 
+          cards={showCards && isCardsVisible ? player.hand : []} 
+          showCards={showCards && isCardsVisible} 
+          cardCount={player.hand_count} 
+        />
+      </div>
 
-      <HandDisplay cards={showCards ? player.hand : []} showCards={showCards} cardCount={player.hand_count} />
+      {/* 玩家状态指示器 - 进一步减少上边距 */}
+      <div className="flex items-center justify-between text-xs text-gray-500">
+        <span>
+          {position === "bottom" ? "主视角" : "观察视角"}
+        </span>
+        {showCards && (
+          <span className="text-green-400">
+            ● 扑克牌可见
+          </span>
+        )}
+      </div>
     </Card>
   )
 }

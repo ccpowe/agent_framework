@@ -349,10 +349,12 @@ class Game:
         if player != self.state.current_player:
             return False, "不是你的回合"
         
-        # 如果是第一手牌且没有上家出牌，地主必须先出牌
-        if self.state.last_play is None and len(self.state.turn_history) == 0:
-            return False, "地主必须先出牌，不能过牌"
-        
+        # 核心规则：当轮到你出牌且场上没有牌时（即你是新一轮的出牌者），你不能过牌。
+        # self.state.last_play is None 意味着开启一个新回合，当前玩家必须出牌。
+        # 这个判断同时覆盖了地主开局不能pass和一轮pass后获得牌权的玩家不能pass两种情况。
+        if self.state.last_play is None:
+            return False, "轮到你出牌，必须出牌，不能过牌"
+
         # 记录过牌
         self.state.turn_history.append((player, None))
         self.state.pass_count += 1
