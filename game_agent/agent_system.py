@@ -115,6 +115,7 @@ class DoudizhuAgentSystem:
         workflow.add_node("determine_landlord", self._determine_landlord_node)
         workflow.add_node("get_player_decision", self._player_decision_node)
         workflow.add_node("process_move", self._process_move_node)
+        workflow.add_node("fallback_strategy", self._fallback_strategy_node)  # 新增兜底策略节点
         
         # 设置入口点
         workflow.add_edge(START, "start_game")
@@ -149,6 +150,17 @@ class DoudizhuAgentSystem:
             {
                 "continue_game": "get_player_decision",
                 "retry_move": "get_player_decision", 
+                "fallback_strategy": "fallback_strategy",  # 新增兜底策略路由
+                "game_over": END
+            }
+        )
+        
+        # 兜底策略节点的路由
+        workflow.add_conditional_edges(
+            "fallback_strategy",
+            self._route_after_fallback,
+            {
+                "continue_game": "get_player_decision",
                 "game_over": END
             }
         )
@@ -296,12 +308,22 @@ class DoudizhuAgentSystem:
             
             logger.info(f"过牌处理: {current_player} -> {next_player}, 成功: {success}")
             
-            return {
+            # 检查游戏是否结束
+            result = {
                 "game": game,
                 "current_player_id": next_player,  # 明确更新当前玩家
                 "move_result": {"success": success, "message": message},
-                "messages": [SystemMessage(content=f"{current_player}: {message}")]
+                "messages": [SystemMessage(content=f"{current_player}: {message}")],
+                "retry_count": 0  # 重置重试计数
             }
+            
+            # 如果游戏结束，添加相应状态
+            if game.state.game_over:
+                result["game_over"] = True
+                result["winner"] = game.state.winner
+                logger.info(f"游戏结束！获胜方: {game.state.winner}")
+            
+            return result
         
         elif decision["action"] == "play":
             # 处理出牌
@@ -324,13 +346,21 @@ class DoudizhuAgentSystem:
                 next_player = game.state.current_player
                 logger.info(f"出牌成功: {current_player} -> {next_player}, 牌型: {cards_str}")
                 
-                return {
+                result = {
                     "game": game,
                     "current_player_id": next_player,  # 明确更新当前玩家
                     "move_result": {"success": True, "message": message},
                     "messages": [SystemMessage(content=f"{current_player}: {message}")],
                     "retry_count": 0  # 重置重试计数
                 }
+                
+                # 检查游戏是否结束
+                if game.state.game_over:
+                    result["game_over"] = True
+                    result["winner"] = game.state.winner
+                    logger.info(f"游戏结束！获胜方: {game.state.winner}")
+                
+                return result
             else:
                 logger.warning(f"出牌失败: {current_player}, {message}")
                 return {
@@ -347,6 +377,37 @@ class DoudizhuAgentSystem:
                 "move_result": {"success": False, "message": "未知动作"}
             }
     
+    def _fallback_strategy_node(self, state: GraphState) -> Dict[str, Any]:
+        """兜底策略节点：当重试次数过多时强制过牌"""
+        current_player = state["current_player_id"]
+        game = state["game"]
+        
+        logger.warning(f"执行兜底策略：为 {current_player} 强制过牌")
+        
+        try:
+            success, message = game.pass_turn(current_player)
+            if success:
+                logger.info(f"兜底策略成功：{current_player} 过牌，切换到 {game.state.current_player}")
+                return {
+                    "game": game,
+                    "current_player_id": game.state.current_player,  # 正确更新当前玩家
+                    "retry_count": 0,  # 重置重试计数
+                    "move_result": {"success": True, "message": f"兜底策略：{message}"},
+                    "messages": [SystemMessage(content=f"兜底策略：{current_player} 强制过牌")]
+                }
+            else:
+                logger.error(f"兜底策略失败：{current_player} 无法过牌 - {message}")
+                return {
+                    "game_over": True,
+                    "move_result": {"success": False, "message": f"兜底策略失败：{message}"}
+                }
+        except Exception as e:
+            logger.error(f"兜底策略异常: {e}")
+            return {
+                "game_over": True,
+                "move_result": {"success": False, "message": f"兜底策略异常：{str(e)}"}
+            }
+    
     # ========== 条件边函数 ==========
     
     def _route_after_landlord_selection(self, state: GraphState) -> str:
@@ -357,7 +418,7 @@ class DoudizhuAgentSystem:
             return "no_landlord"
     
     def _route_game_flow(self, state: GraphState) -> str:
-        """游戏主循环路由逻辑"""
+        """游戏主循环路由逻辑（修复版本）"""
         move_result = state.get("move_result", {})
         retry_count = state.get("retry_count", 0)
         
@@ -368,36 +429,24 @@ class DoudizhuAgentSystem:
         
         # 检查是否移动失败且需要重试
         if not move_result.get("success", False):
-            # 关键修复：将重试条件从 >= 3 改为 >= 2，修复 off-by-one 错误
             if retry_count >= 2:
-                # 兜底策略：重试次数过多，强制过牌
-                current_player = state["current_player_id"]
-                game = state["game"]
-                logger.warning(f"重试次数过多，为 {current_player} 执行强制过牌")
-                
-                try:
-                    success, message = game.pass_turn(current_player)
-                    if success:
-                        logger.info(f"兜底策略：{current_player} 成功过牌")
-                        # 强制过牌后，重置重试计数并更新玩家
-                        state["retry_count"] = 0
-                        state["current_player_id"] = game.state.current_player
-                        return "continue_game"
-                    else:
-                        # 如果连过牌都失败（例如地主首轮），则游戏陷入死锁，直接结束
-                        logger.error(f"兜底策略失败：{current_player} 无法过牌 - {message}")
-                        return "game_over"
-                except Exception as e:
-                    logger.error(f"兜底策略异常: {e}")
-                    return "game_over"
+                # 重试次数过多，路由到兜底策略节点
+                logger.info(f"重试次数过多 ({retry_count + 1}/3)，路由到兜底策略")
+                return "fallback_strategy"
             else:
                 logger.info(f"移动失败，重试 {retry_count + 1}/3")
                 return "retry_move"
         
-        # 成功移动，重置重试计数并继续游戏
-        state["retry_count"] = 0
+        # 成功移动，继续游戏
         logger.info(f"移动成功，当前玩家: {state['current_player_id']}")
         return "continue_game"
+    
+    def _route_after_fallback(self, state: GraphState) -> str:
+        """兜底策略后的路由"""
+        if state.get("game_over", False):
+            return "game_over"
+        else:
+            return "continue_game"
     
     # ========== 辅助函数 ==========
     
@@ -525,8 +574,12 @@ class DoudizhuAgentSystem:
         
         logger.info("开始流式运行游戏")
         
-        # 使用 astream 代替 ainvoke
-        async for chunk in self.workflow.astream(initial_state):
+        # 根据LangGraph官方文档，正确设置递归限制
+        from langchain_core.runnables.config import RunnableConfig
+        config: RunnableConfig = {"recursion_limit": 200}  # 设置更高的递归限制，足够完成一局游戏
+        
+        # 使用 astream 代替 ainvoke，并传递config
+        async for chunk in self.workflow.astream(initial_state, config):
             logger.info(f"流式输出状态块: {list(chunk.keys())}")
             yield chunk
 

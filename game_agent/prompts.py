@@ -201,57 +201,56 @@ OUTPUT_PATTERNS = {
 
 
 def parse_ai_response(response: str) -> Dict[str, Any]:
-    """解析AI的回复，提取动作和参数"""
+    """解析AI的回复，提取动作和参数。"""
     import re
     import logging
     
     logger = logging.getLogger(__name__)
     original_response = response
-    response = response.strip()
+    response_lines = response.strip().split('\n')
     
-    logger.info(f"解析AI回复: '{original_response}' -> 处理后: '{response}'")
-    
-    # 先检查是否包含叫地主
-    if re.search(OUTPUT_PATTERNS["call_landlord"], response, re.IGNORECASE):
-        logger.info("识别为：叫地主")
-        return {"action": "call_landlord"}
-    
-    # 检查是否明确表示过牌
-    if re.search(OUTPUT_PATTERNS["pass"], response, re.IGNORECASE):
-        logger.info("识别为：过牌")
+    logger.info(f"解析AI回复: '{original_response}'")
+
+    # 策略1: 寻找明确的决策行，如 "决策：play ..." 或 "play ..."
+    decision_line = ""
+    for line in reversed(response_lines):
+        cleaned_line = line.strip()
+        if cleaned_line.lower().startswith(('play', 'pass', '决策：', 'decision:')):
+            decision_line = cleaned_line
+            break
+
+    if decision_line:
+        logger.info(f"找到决策行: '{decision_line}'")
+        # 从决策行中移除 "决策：" 或 "Decision:" 前缀
+        if decision_line.lower().startswith('决策：'):
+            decision_line = decision_line[3:].strip()
+        elif decision_line.lower().startswith('decision:'):
+            decision_line = decision_line[9:].strip()
+        
+        # 解析动作
+        if decision_line.lower().startswith('play'):
+            parts = decision_line.split(maxsplit=1)
+            if len(parts) > 1:
+                logger.info(f"识别为：出牌 - {parts[1]}")
+                return {"action": "play", "cards": parts[1]}
+        
+        if decision_line.lower() == 'pass':
+            logger.info("识别为：过牌")
+            return {"action": "pass"}
+
+    # 策略2: 如果没有明确的决策行，则在整个响应中搜索关键字（作为后备）
+    logger.info("未找到明确决策行，在整个响应中搜索关键字...")
+    if re.search(r"\bpass\b", response, re.IGNORECASE):
+        logger.info("在文本中找到 'pass' 关键字，识别为：过牌")
         return {"action": "pass"}
-    
-    # 检查是否是出牌（更宽松的匹配）
-    # 尝试多种出牌格式
-    play_patterns = [
-        r"play\s+(.+)",  # play ♠3 ♥4
-        r"出牌?\s*[:：]?\s*(.+)",  # 出牌：♠3 ♥4 或 出：♠3 ♥4
-        r"我?出\s*(.+)",  # 我出♠3 ♥4
-        r"^([♠♥♦♣]\w*(?:\s+[♠♥♦♣]\w*)*)\s*$",  # 直接的牌型 ♠3 ♥4
-    ]
-    
-    for pattern in play_patterns:
-        play_match = re.search(pattern, response, re.IGNORECASE)
-        if play_match:
-            cards_str = play_match.group(1).strip()
-            logger.info(f"识别为：出牌 - {cards_str}")
-            return {"action": "play", "cards": cards_str}
-    
-    # 尝试提取可能的牌型（即使没有明确的动作词）
-    # 更精确的牌型匹配
-    card_patterns = [
-        r'[♠♥♦♣][3-9]|[♠♥♦♣]10|[♠♥♦♣][JQKA2]|🃏|🂿',  # 基本牌型
-        r'♠[3-9A-K2]|♥[3-9A-K2]|♦[3-9A-K2]|♣[3-9A-K2]',  # 更宽松匹配
-    ]
-    
-    for pattern in card_patterns:
-        found_cards = re.findall(pattern, response)
-        if found_cards and len(found_cards) >= 1:  # 至少找到一张牌
-            cards_str = ' '.join(found_cards)
-            logger.info(f"从文本中提取牌型：{cards_str}")
-            return {"action": "play", "cards": cards_str}
-    
-    # 如果什么都没匹配到，记录详细信息并默认过牌
+
+    play_match = re.search(r"play\s+(.+)", response, re.IGNORECASE)
+    if play_match:
+        cards_str = play_match.group(1).strip()
+        logger.info(f"在文本中找到 'play' 关键字，识别为：出牌 - {cards_str}")
+        return {"action": "play", "cards": cards_str}
+
+    # 策略3: 如果以上都不匹配，则默认过牌
     logger.warning(f"无法解析AI回复，使用默认过牌策略。原文：'{original_response}'")
     return {"action": "pass"}
 
