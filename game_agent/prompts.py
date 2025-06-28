@@ -28,6 +28,11 @@ GAME_RULES = """
 - 王炸：大王+小王，最大的牌型
 
 牌力大小：3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A < 2 < 小王 < 大王
+
+牌型比较规则：
+1. 王炸最大，可以压任何牌。
+2. 炸弹次之，可以压任何非炸弹牌型和比自己小的炸弹。
+3. 其他牌型必须同类型且点数更大才能压过。例如，对子只能用更大的对子压，顺子只能用起始点数更大的同长度顺子压。
 """
 
 # 地主角色提示
@@ -56,6 +61,8 @@ LANDLORD_PROMPT = """
 2. 过牌：如果无法或不想出牌（格式：pass）
 
 {feedback}
+
+重要提示：如果系统反馈你的出牌无效，请仔细阅读反馈信息，并尝试修正你的出牌策略。不要重复无效的牌型。
 
 你的决策：
 """
@@ -87,26 +94,31 @@ FARMER_PROMPT = """
 
 {feedback}
 
+重要提示：如果系统反馈你的出牌无效，请仔细阅读反馈信息，并尝试修正你的出牌策略。不要重复无效的牌型。
+
 你的决策：
 """
 
 # 叫地主阶段提示
 LANDLORD_BIDDING_PROMPT = """
-你正在参与斗地主游戏的叫地主环节。
+玩家 {player_id}，你正在参与斗地主游戏的叫地主环节。
 
 你的手牌：{player_cards}
-底牌：{landlord_cards}
+当前最高叫分：{current_bid}分
 
-如果你成为地主，将获得这3张底牌，但需要1打2。
+如果你成为地主，将获得3张底牌，但需要1打2。
 如果你选择不叫地主，将成为农民，与另一位农民合作。
 
 评估因素：
 1. 你的牌力强度（大牌、炸弹、连牌等）
-2. 底牌对你的帮助程度
-3. 1打2的风险
+2. 叫分策略：
+   - 0分：不叫
+   - 1分：叫地主，但牌力一般
+   - 2分：牌力较好，有信心叫地主
+   - 3分：牌力极好，强烈希望叫地主
 
-请选择：
-1. 叫地主：call_landlord
+请选择你的行动：
+1. 叫分：bid <分数> (例如: bid 1, bid 2, bid 3)
 2. 不叫：pass
 
 你的选择：
@@ -165,11 +177,12 @@ def format_farmer_prompt(
     )
 
 
-def format_bidding_prompt(player_cards: str, landlord_cards: str) -> str:
+def format_bidding_prompt(player_cards: str, current_bid: int, player_id: str) -> str:
     """格式化叫地主提示"""
     return LANDLORD_BIDDING_PROMPT.format(
         player_cards=player_cards,
-        landlord_cards=landlord_cards
+        current_bid=current_bid,
+        player_id=player_id
     )
 
 
@@ -215,7 +228,7 @@ def parse_ai_response(response: str) -> Dict[str, Any]:
     decision_line = ""
     for line in reversed(response_lines):
         cleaned_line = line.strip()
-        if cleaned_line.lower().startswith(('play', 'pass', '决策：', 'decision:')):
+        if cleaned_line.lower().startswith(('play', 'pass', '决策：', 'decision:', 'bid')):
             decision_line = cleaned_line
             break
 
@@ -238,6 +251,18 @@ def parse_ai_response(response: str) -> Dict[str, Any]:
             logger.info("识别为：过牌")
             return {"action": "pass"}
 
+        if decision_line.lower().startswith('bid'):
+            parts = decision_line.split(maxsplit=1)
+            if len(parts) > 1 and parts[1].isdigit():
+                score = int(parts[1])
+                if 0 <= score <= 3:
+                    logger.info(f"识别为：叫分 - {score}")
+                    return {"action": "bid", "score": score}
+                else:
+                    logger.warning(f"叫分超出范围 (0-3): {score}")
+            logger.warning(f"无法解析叫分: {decision_line}")
+            return {"action": "pass"} # 叫分失败则默认过牌
+
     # 策略2: 如果没有明确的决策行，则在整个响应中搜索关键字（作为后备）
     logger.info("未找到明确决策行，在整个响应中搜索关键字...")
     if re.search(r"\bpass\b", response, re.IGNORECASE):
@@ -249,6 +274,15 @@ def parse_ai_response(response: str) -> Dict[str, Any]:
         cards_str = play_match.group(1).strip()
         logger.info(f"在文本中找到 'play' 关键字，识别为：出牌 - {cards_str}")
         return {"action": "play", "cards": cards_str}
+
+    bid_match = re.search(r"bid\s+(\d+)", response, re.IGNORECASE)
+    if bid_match:
+        score = int(bid_match.group(1))
+        if 0 <= score <= 3:
+            logger.info(f"在文本中找到 'bid' 关键字，识别为：叫分 - {score}")
+            return {"action": "bid", "score": score}
+        else:
+            logger.warning(f"在文本中找到叫分但超出范围 (0-3): {score}")
 
     # 策略3: 如果以上都不匹配，则默认过牌
     logger.warning(f"无法解析AI回复，使用默认过牌策略。原文：'{original_response}'")

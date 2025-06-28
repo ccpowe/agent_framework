@@ -148,10 +148,10 @@ class CardAnalyzer:
     """牌型分析器"""
     
     @staticmethod
-    def analyze_cards(cards: List[Card]) -> CardPlay:
+    def analyze_cards(cards: List[Card]) -> Tuple[CardPlay, str]:
         """分析牌型"""
         if not cards:
-            return CardPlay([], CardType.INVALID, 0)
+            return CardPlay([], CardType.INVALID, 0), "出牌不能为空"
         
         # 按点数分组
         rank_counts = {}
@@ -164,63 +164,83 @@ class CardAnalyzer:
         
         # 王炸
         if len(cards) == 2 and 16 in rank_counts and 17 in rank_counts:
-            return CardPlay(cards, CardType.ROCKET, 1000)
+            return CardPlay(cards, CardType.ROCKET, 1000), "合法出牌"
         
         # 炸弹
         if len(cards) == 4 and counts == [4]:
-            return CardPlay(cards, CardType.BOMB, 100 + sorted_ranks[0])
+            return CardPlay(cards, CardType.BOMB, 100 + sorted_ranks[0]), "合法出牌"
         
         # 单牌
         if len(cards) == 1:
-            return CardPlay(cards, CardType.SINGLE, sorted_ranks[0])
+            return CardPlay(cards, CardType.SINGLE, sorted_ranks[0]), "合法出牌"
         
         # 对子
         if len(cards) == 2 and counts == [2]:
-            return CardPlay(cards, CardType.PAIR, sorted_ranks[0])
+            return CardPlay(cards, CardType.PAIR, sorted_ranks[0]), "合法出牌"
         
         # 三张
         if len(cards) == 3 and counts == [3]:
-            return CardPlay(cards, CardType.TRIPLE, sorted_ranks[0])
+            return CardPlay(cards, CardType.TRIPLE, sorted_ranks[0]), "合法出牌"
         
         # 三带一
         if len(cards) == 4 and counts == [1, 3]:
             triple_rank = max(rank_counts.keys(), key=lambda x: rank_counts[x])
-            return CardPlay(cards, CardType.TRIPLE_SINGLE, triple_rank)
+            return CardPlay(cards, CardType.TRIPLE_SINGLE, triple_rank), "合法出牌"
         
         # 三带一对
         if len(cards) == 5 and counts == [2, 3]:
             triple_rank = max(rank_counts.keys(), key=lambda x: rank_counts[x])
-            return CardPlay(cards, CardType.TRIPLE_PAIR, triple_rank)
+            return CardPlay(cards, CardType.TRIPLE_PAIR, triple_rank), "合法出牌"
         
         # 顺子（至少5张）
         if len(cards) >= 5 and len(set(counts)) == 1 and counts[0] == 1:
             if CardAnalyzer._is_consecutive(sorted_ranks) and max(sorted_ranks) <= 14:
-                return CardPlay(cards, CardType.STRAIGHT, min(sorted_ranks))
+                return CardPlay(cards, CardType.STRAIGHT, min(sorted_ranks)), "合法出牌"
+            else:
+                return CardPlay(cards, CardType.INVALID, 0), "顺子不连续或包含2/大小王"
+        elif len(set(counts)) == 1 and counts[0] == 1 and CardAnalyzer._is_consecutive(sorted_ranks) and max(sorted_ranks) <= 14:
+            return CardPlay(cards, CardType.INVALID, 0), "顺子至少需要5张牌"
         
         # 连对（至少3对）
         if len(cards) >= 6 and len(cards) % 2 == 0 and len(set(counts)) == 1 and counts[0] == 2:
             if CardAnalyzer._is_consecutive(sorted_ranks) and max(sorted_ranks) <= 14:
-                return CardPlay(cards, CardType.PAIR_STRAIGHT, min(sorted_ranks))
+                return CardPlay(cards, CardType.PAIR_STRAIGHT, min(sorted_ranks)), "合法出牌"
+            else:
+                return CardPlay(cards, CardType.INVALID, 0), "连对不连续或包含2/大小王"
+        elif len(cards) < 6 and len(cards) % 2 == 0 and len(set(counts)) == 1 and counts[0] == 2 and CardAnalyzer._is_consecutive(sorted_ranks) and max(sorted_ranks) <= 14:
+            return CardPlay(cards, CardType.INVALID, 0), "连对至少需要3对"
         
         # 飞机不带翅膀（至少2个三张）
         if len(cards) >= 6 and len(cards) % 3 == 0 and len(set(counts)) == 1 and counts[0] == 3:
             if CardAnalyzer._is_consecutive(sorted_ranks) and max(sorted_ranks) <= 14:
-                return CardPlay(cards, CardType.TRIPLE_STRAIGHT, min(sorted_ranks))
+                return CardPlay(cards, CardType.TRIPLE_STRAIGHT, min(sorted_ranks)), "合法出牌"
+            else:
+                return CardPlay(cards, CardType.INVALID, 0), "飞机不带不连续或包含2/大小王"
+        elif len(cards) < 6 and len(cards) % 3 == 0 and len(set(counts)) == 1 and counts[0] == 3 and CardAnalyzer._is_consecutive(sorted_ranks) and max(sorted_ranks) <= 14:
+            return CardPlay(cards, CardType.INVALID, 0), "飞机不带至少需要2个三张"
         
         # 飞机带单牌
         triple_ranks = [rank for rank, count in rank_counts.items() if count == 3]
         single_ranks = [rank for rank, count in rank_counts.items() if count == 1]
         if len(triple_ranks) >= 2 and len(single_ranks) == len(triple_ranks):
             if CardAnalyzer._is_consecutive(triple_ranks) and max(triple_ranks) <= 14:
-                return CardPlay(cards, CardType.AIRPLANE_SINGLE, min(triple_ranks))
+                return CardPlay(cards, CardType.AIRPLANE_SINGLE, min(triple_ranks)), "合法出牌"
+            else:
+                return CardPlay(cards, CardType.INVALID, 0), "飞机带单牌不连续或包含2/大小王"
+        elif len(triple_ranks) < 2 and len(single_ranks) == len(triple_ranks):
+            return CardPlay(cards, CardType.INVALID, 0), "飞机带单牌至少需要2个三张"
         
         # 飞机带对子
         pair_ranks = [rank for rank, count in rank_counts.items() if count == 2]
         if len(triple_ranks) >= 2 and len(pair_ranks) == len(triple_ranks):
             if CardAnalyzer._is_consecutive(triple_ranks) and max(triple_ranks) <= 14:
-                return CardPlay(cards, CardType.AIRPLANE_PAIR, min(triple_ranks))
+                return CardPlay(cards, CardType.AIRPLANE_PAIR, min(triple_ranks)), "合法出牌"
+            else:
+                return CardPlay(cards, CardType.INVALID, 0), "飞机带对子不连续或包含2/大小王"
+        elif len(triple_ranks) < 2 and len(pair_ranks) == len(triple_ranks):
+            return CardPlay(cards, CardType.INVALID, 0), "飞机带对子至少需要2个三张"
         
-        return CardPlay(cards, CardType.INVALID, 0)
+        return CardPlay(cards, CardType.INVALID, 0), "无效的牌型"
     
     @staticmethod
     def _is_consecutive(ranks: List[int]) -> bool:
@@ -286,9 +306,9 @@ class Game:
                 return False, f"你没有这张牌：{card}", None
         
         # 分析牌型
-        card_play = CardAnalyzer.analyze_cards(cards)
+        card_play, message = CardAnalyzer.analyze_cards(cards)
         if card_play.card_type == CardType.INVALID:
-            return False, "无效的牌型", None
+            return False, message, None
         
         # 检查是否可以压过上家
         if self.state.last_play is not None:

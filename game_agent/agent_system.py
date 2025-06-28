@@ -611,7 +611,7 @@ class DoudizhuAgentSystem:
         
         # 根据LangGraph官方文档，正确设置递归限制
         from langchain_core.runnables.config import RunnableConfig
-        config: RunnableConfig = {"recursion_limit": 200}  # 设置更高的递归限制，足够完成一局游戏
+        config: RunnableConfig = {"recursion_limit": 500}  # 设置更高的递归限制，足够完成一局游戏
         
         # 使用 astream 代替 ainvoke，并传递config
         async for chunk in self.workflow.astream(initial_state, config):
