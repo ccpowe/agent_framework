@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { GameBoard } from "@/components/game-board"
 import { WelcomeView } from "@/components/welcome-view"
 import { EndGameModal } from "@/components/end-game-modal"
@@ -45,6 +45,17 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [currentGameId, setCurrentGameId] = useState<string | null>(null)
+  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null)
+  const [lastValidGameState, setLastValidGameState] = useState<GameState | null>(null)
+
+  // 组件卸载时清理轮询
+  useEffect(() => {
+    return () => {
+      if (pollingInterval) {
+        clearInterval(pollingInterval)
+      }
+    }
+  }, [pollingInterval])
 
   // 真实API调用函数
   const startNewGame = async () => {
@@ -88,15 +99,52 @@ export default function Home() {
     }
   }
 
+  // 停止轮询
+  const stopPolling = () => {
+    if (pollingInterval) {
+      clearInterval(pollingInterval)
+      setPollingInterval(null)
+      console.log("停止轮询")
+    }
+  }
+
   // 轮询游戏状态
   const startPolling = (gameId: string) => {
     console.log("开始轮询游戏状态:", gameId)
+    
+    // 先清除之前的轮询
+    stopPolling()
     
     const pollGameState = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/api/game/${gameId}/state`)
         
         if (!response.ok) {
+          // 如果是404或游戏不存在，可能是游戏已结束
+          if (response.status === 404) {
+            console.log("游戏不存在，可能已结束")
+            
+            // 如果有最后的有效状态且游戏已结束，使用该状态
+            if (lastValidGameState && lastValidGameState.game_status === "finished") {
+              console.log("使用最后的有效游戏状态")
+              setGameState(lastValidGameState)
+              stopPolling()
+              return
+            }
+            
+            // 否则尝试解析错误响应
+            try {
+              const errorData = await response.json()
+              if (errorData.detail === "游戏不存在") {
+                console.log("游戏已结束，停止轮询")
+                stopPolling()
+                return
+              }
+            } catch (parseErr) {
+              console.log("无法解析错误响应")
+            }
+          }
+          
           throw new Error(`HTTP error! status: ${response.status}`)
         }
         
@@ -107,6 +155,13 @@ export default function Home() {
         if (data.game_state && Object.keys(data.game_state).length > 0) {
           const convertedState = convertBackendStateToFrontend(data)
           setGameState(convertedState)
+          setLastValidGameState(convertedState)
+          
+          // 如果游戏已结束，停止轮询
+          if (convertedState.game_status === "finished") {
+            console.log("检测到游戏结束，停止轮询")
+            stopPolling()
+          }
         }
         
       } catch (err) {
@@ -120,10 +175,11 @@ export default function Home() {
     
     // 每2秒轮询一次
     const interval = setInterval(pollGameState, 2000)
+    setPollingInterval(interval)
     
-    // 5分钟后停止轮询
+    // 5分钟后停止轮询（安全措施）
     setTimeout(() => {
-      clearInterval(interval)
+      stopPolling()
       console.log("轮询超时，停止轮询")
     }, 300000)
     
@@ -238,7 +294,7 @@ export default function Home() {
       }
 
       // 设置游戏状态
-      if (backendState.game_over) {
+      if (backendState.game_over || backendState.winner) {
         gameState.game_status = "finished"
         if (backendState.winner === "landlord") {
           gameState.winner = "landlord"
@@ -247,6 +303,11 @@ export default function Home() {
         }
       } else if (backendState.landlord) {
         gameState.game_status = "in_progress"
+      }
+      
+      // 额外检查：如果有获胜者，确保游戏状态为结束
+      if (backendState.winner && gameState.game_status !== "finished") {
+        gameState.game_status = "finished"
       }
 
       // 构建行动日志
@@ -282,9 +343,11 @@ export default function Home() {
   }
 
   const handleRestart = () => {
+    stopPolling()
     setGameState(null)
     setError(null)
     setCurrentGameId(null)
+    setLastValidGameState(null)
   }
 
   if (!gameState) {

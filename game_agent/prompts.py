@@ -244,8 +244,13 @@ def parse_ai_response(response: str) -> Dict[str, Any]:
         if decision_line.lower().startswith('play'):
             parts = decision_line.split(maxsplit=1)
             if len(parts) > 1:
-                logger.info(f"识别为：出牌 - {parts[1]}")
-                return {"action": "play", "cards": parts[1]}
+                cards_str = parts[1].strip()
+                # 清理markdown格式和其他干扰字符
+                cards_str = re.sub(r'\*+', '', cards_str)  # 移除markdown粗体标记
+                cards_str = re.sub(r'[`_~]', '', cards_str)  # 移除其他markdown标记
+                cards_str = cards_str.strip()
+                logger.info(f"识别为：出牌 - {cards_str}")
+                return {"action": "play", "cards": cards_str}
         
         if decision_line.lower() == 'pass':
             logger.info("识别为：过牌")
@@ -272,6 +277,10 @@ def parse_ai_response(response: str) -> Dict[str, Any]:
     play_match = re.search(r"play\s+(.+)", response, re.IGNORECASE)
     if play_match:
         cards_str = play_match.group(1).strip()
+        # 清理markdown格式和其他干扰字符
+        cards_str = re.sub(r'\*+', '', cards_str)  # 移除markdown粗体标记
+        cards_str = re.sub(r'[`_~]', '', cards_str)  # 移除其他markdown标记
+        cards_str = cards_str.strip()
         logger.info(f"在文本中找到 'play' 关键字，识别为：出牌 - {cards_str}")
         return {"action": "play", "cards": cards_str}
 

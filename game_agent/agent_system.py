@@ -413,29 +413,61 @@ class DoudizhuAgentSystem:
             }
     
     def _fallback_strategy_node(self, state: GraphState) -> Dict[str, Any]:
-        """兜底策略节点：当重试次数过多时强制过牌"""
+        """兜底策略节点：当重试次数过多时尝试智能兜底"""
         current_player = state["current_player_id"]
         game = state["game"]
         
-        logger.warning(f"执行兜底策略：为 {current_player} 强制过牌")
+        logger.warning(f"执行兜底策略：为 {current_player}")
         
         try:
+            # 首先尝试过牌
             success, message = game.pass_turn(current_player)
             if success:
                 logger.info(f"兜底策略成功：{current_player} 过牌，切换到 {game.state.current_player}")
                 return {
                     "game": game,
-                    "current_player_id": game.state.current_player,  # 正确更新当前玩家
-                    "retry_count": 0,  # 重置重试计数
+                    "current_player_id": game.state.current_player,
+                    "retry_count": 0,
                     "move_result": {"success": True, "message": f"兜底策略：{message}"},
                     "messages": [SystemMessage(content=f"兜底策略：{current_player} 强制过牌")]
                 }
             else:
-                logger.error(f"兜底策略失败：{current_player} 无法过牌 - {message}")
-                return {
-                    "game_over": True,
-                    "move_result": {"success": False, "message": f"兜底策略失败：{message}"}
-                }
+                # 无法过牌，尝试出最小的单牌
+                logger.warning(f"无法过牌：{message}，尝试出最小单牌")
+                
+                # 获取玩家手牌
+                player_hand = game.state.player_hands[current_player]
+                if not player_hand.cards:
+                    logger.error(f"玩家 {current_player} 没有手牌")
+                    return {
+                        "game_over": True,
+                        "move_result": {"success": False, "message": "兜底策略失败：没有手牌"}
+                    }
+                
+                # 找到最小的单牌
+                sorted_cards = sorted(player_hand.cards, key=lambda c: c.rank)
+                smallest_card = sorted_cards[0]
+                
+                logger.info(f"兜底策略：尝试出最小单牌 {smallest_card}")
+                
+                # 尝试出牌
+                success, result_message = game.play_cards(current_player, [smallest_card])
+                if success:
+                    logger.info(f"兜底策略成功：{current_player} 出牌 {smallest_card}")
+                    return {
+                        "game": game,
+                        "current_player_id": game.state.current_player,
+                        "retry_count": 0,
+                        "move_result": {"success": True, "message": f"兜底策略：出牌 {smallest_card}"},
+                        "messages": [SystemMessage(content=f"兜底策略：{current_player} 出牌 {smallest_card}")]
+                    }
+                else:
+                    logger.error(f"兜底策略失败：无法出牌 {smallest_card} - {result_message}")
+                    return {
+                        "game_over": True,
+                        "move_result": {"success": False, "message": f"兜底策略失败：{result_message}"}
+                    }
+                    
         except Exception as e:
             logger.error(f"兜底策略异常: {e}")
             return {
